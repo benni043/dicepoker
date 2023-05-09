@@ -1,0 +1,9 @@
+<div>
+  <label for="server">Server: </label>
+  <input type="number" name="server" id="server" [(ngModel)]="serverName">
+
+  <label for="name">SpielerName: </label>
+  <input type="text" name="name" id="name" [(ngModel)]="playerName" placeholder="Spielername">
+
+  <button (click)="join()">Verbinden</button>
+</div>

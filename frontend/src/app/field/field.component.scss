@@ -1,0 +1,50 @@
+.borderBottom {
+  border-bottom: 3px solid black;
+}
+
+.borderBottom2 {
+  border-bottom: 1px solid gray;
+}
+
+.borderVert {
+  border-right: 3px solid black;
+}
+
+.borderVert2 {
+  border-right: 1px solid gray;
+}
+
+.titleFlex, .valElemRow {
+  display: flex;
+  flex-direction: row;
+
+  align-items: center;
+}
+
+.valElem {
+  text-align: center;
+  width: 150px;
+  height: 20px;
+  padding: 15px;
+  box-sizing: content-box;
+}
+
+button {
+  background: none;
+  border: 0;
+}
+
+button:hover {
+  background-color: aquamarine;
+}
+
+#main {
+  padding: 20px;
+  border: 2px solid black;
+  border-radius: 15px;
+  max-width: min-content;
+}
+
+.headline {
+  background-color: blueviolet!important;
+}

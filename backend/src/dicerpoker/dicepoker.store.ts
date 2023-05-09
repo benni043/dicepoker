@@ -22,7 +22,7 @@ export class DicepokerStore {
                     playerName: standardGameData.playerName,
                     isOnline: true,
                     dices: [],
-                    movesLeft: 2,
+                    movesLeft: 3,
                     points: 0,
                     socket: ws,
                     isOnMove: false,
@@ -57,7 +57,7 @@ export class DicepokerStore {
                     playerName: "",
                     isOnline: false,
                     dices: [],
-                    movesLeft: 2,
+                    movesLeft: 3,
                     points: 0,
                     socket: undefined,
                     isOnMove: false,
@@ -112,11 +112,7 @@ export class DicepokerStore {
             for (let fiveRandomDice of fiveRandomDices1) {
                 this.game.get(standardGameData.serverName)!.player1.dices.push(fiveRandomDice);
             }
-
-            let fiveRandomDices2 = this.getNRandomDices(5);
-            for (let fiveRandomDice of fiveRandomDices2) {
-                this.game.get(standardGameData.serverName)!.player2.dices.push(fiveRandomDice);
-            }
+            this.game.get(standardGameData.serverName)!.player1.movesLeft--;
 
             return {
                 responseDicesPlayer1: this.game.get(standardGameData.serverName)!.player1.dices,
@@ -127,7 +123,19 @@ export class DicepokerStore {
         }
     }
 
-    setPoints(playerName: string, serverName: number, field: string): number {
+    setPoints(playerName: string, serverName: number, field: string): Map<string, {
+        ones: number,
+        twos: number,
+        threes: number,
+        fours: number,
+        fives: number,
+        sixes: number,
+        fullHouse: number,
+        street: number,
+        poker: number,
+        grande: number,
+        doubleGrande: number
+    }> {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
         let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
 
@@ -190,7 +198,7 @@ export class DicepokerStore {
         }
 
         player.isOnMove = false;
-        player.movesLeft = 2;
+        player.movesLeft = 3;
         player.dices = [];
         player.pointsFieldTMP = {
             ones: 0,
@@ -208,7 +216,24 @@ export class DicepokerStore {
 
         opponent.isOnMove = true;
 
-        return player.points
+        let map: Map<string, {
+            ones: number,
+            twos: number,
+            threes: number,
+            fours: number,
+            fives: number,
+            sixes: number,
+            fullHouse: number,
+            street: number,
+            poker: number,
+            grande: number,
+            doubleGrande: number
+        }> = new Map();
+
+        map.set(player.playerName, player.pointsField);
+        map.set(opponent.playerName, opponent.pointsField);
+
+        return map;
     }
 
     changeDices(receiveDices: ReceiveDice[], playerName: string, serverName: number): End {
@@ -225,7 +250,7 @@ export class DicepokerStore {
         let response = this.setPlayerSettings(serverName, playerName, newDices);
 
         if (response.end) {
-            return {turnEnd: {end: true, pointsField: response.pointsField}, dices: newDices}
+            return {turnEnd: {end: true, sumField: response.sumField}, dices: newDices}
         } else {
             return {turnEnd: null, dices: newDices}
         }
@@ -242,10 +267,26 @@ export class DicepokerStore {
 
             player.pointsFieldTMP = pointsField;
 
-            return {end: true, pointsField: pointsField};
+            let map: Map<string, {
+                ones: number,
+                twos: number,
+                threes: number,
+                fours: number,
+                fives: number,
+                sixes: number,
+                fullHouse: number,
+                street: number,
+                poker: number,
+                grande: number,
+                doubleGrande: number
+            }> = new Map();
+
+            map.set(player.playerName, player.pointsFieldTMP);
+
+            return {end: true, sumField: map};
         }
 
-        return {end: false, pointsField: null}
+        return {end: false, sumField: null}
     }
 
     calculateSetPointsField(dices: Dice[]): SetPointsField {

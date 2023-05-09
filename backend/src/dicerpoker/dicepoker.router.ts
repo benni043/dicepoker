@@ -54,8 +54,10 @@ export class DicepokerRouter {
                     ws.emit("playerNotOnTurnErr")
                 } else if (res.returnEnum == ReturnEnum.throwSuccess) {
                     ws.emit("throwSuccess", res.response);
+                } else if (res.returnEnum == ReturnEnum.turnIsOver) {
+                    ws.emit("turnIsOver");
                 } else if (res.returnEnum == ReturnEnum.throwSuccessEnd) {
-                    ws.emit("throwSuccessEnd", (res))
+                    ws.emit("throwSuccessEnd", {sumField: JSON.stringify(Array.from(res.sumField!.entries())), dices: res.response})
                 }
             });
 
@@ -71,7 +73,7 @@ export class DicepokerRouter {
                 } else if (res.returnEnum == ReturnEnum.turnIsNotOver) {
                     ws.emit("turnIsNotOver");
                 } else if (res.returnEnum == ReturnEnum.setSuccess) {
-                    ws.emit("setSuccess", (res.points));
+                    ws.emit("setSuccess", JSON.stringify(Array.from(res.sumField!.entries())));
                 }
             })
         });

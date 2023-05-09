@@ -23,10 +23,15 @@
 
 .valElem {
   text-align: center;
-  width: 150px;
-  height: 20px;
+  min-width: 85px;
+  max-width: 85px;
+  height: 15px;
   padding: 15px;
   box-sizing: content-box;
+}
+
+.left {
+  text-align: left;
 }
 
 button {

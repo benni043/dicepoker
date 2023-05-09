@@ -1,6 +1,7 @@
 import {Component} from '@angular/core';
-import {connect, Socket} from "socket.io-client";
-import {Dice, SetPointData, StandardGameData, ThrowData, ThrowReturn} from "../../../utils/game";
+import {connect} from "socket.io-client";
+import {Dice, SetPointData, SetPointsField, ThrowData, ThrowReturn} from "../../../utils/game";
+import {RouterService} from "./router.service";
 
 @Component({
   selector: 'app-root',
@@ -11,17 +12,12 @@ export class AppComponent {
 
   title = 'frontend';
 
-  socket: Socket;
-
-  playerName: string = "";
-  serverName: number = 0;
-
   dices: Dice[] = [];
 
-  constructor() {
-    this.socket = connect("http://localhost:3000/");
+  constructor(public routerService: RouterService) {
+    routerService.socket = connect("http://localhost:3000/");
 
-    this.socket.on("joinSuccess", (dices: Dice[]) => {
+    routerService.socket.on("joinSuccess", (dices: Dice[]) => {
       console.log("joinSucc")
       for (let dice of dices) {
         this.dices.push(dice);
@@ -30,45 +26,57 @@ export class AppComponent {
       console.log(dices);
     })
 
-    this.socket.on("gameFullErr", () => {
+    routerService.socket.on("gameFullErr", () => {
       console.log("gameIsFull");
     })
 
-    this.socket.on("gameNotStartedErr", () => {
+    routerService.socket.on("gameNotStartedErr", () => {
       console.log("gameNotStartedErr");
     })
 
-    this.socket.on("illegalPlayerErr", () => {
+    routerService.socket.on("illegalPlayerErr", () => {
       console.log("illegalPlayerErr");
     })
 
-    this.socket.on("playerNotOnTurnErr", () => {
+    routerService.socket.on("playerNotOnTurnErr", () => {
       alert("Du bist nicht an der Reihe!");
     })
 
-    this.socket.on("throwSuccess", (newDices: Dice[]) => {
+    routerService.socket.on("throwSuccess", (newDices: Dice[]) => {
       console.log(newDices);
     })
 
-    this.socket.on("throwSuccessEnd", (throwReturn: ThrowReturn) => {
-      console.log(throwReturn.response);
-      console.log("pointsField: ")
-      console.log(throwReturn.pointsField);
+    routerService.socket.on("throwSuccessEnd", (throwReturn) => {
+      let map: Map<string, SetPointsField> = new Map(JSON.parse(throwReturn.sumField));
+
+      console.log(throwReturn.dices);
+
+      this.routerService.sumField = null;
+      setTimeout(() => {
+        this.routerService.sumField = map;
+      }, 10)
     })
 
-    this.socket.on("setSuccess", (points: number) => {
-      console.log("points: ")
-      console.log(points)
+    routerService.socket.on("setSuccess", (sumField) => {
+      let map: Map<string, SetPointsField> = new Map(JSON.parse(sumField));
+
+      this.routerService.sumField = null;
+      setTimeout(() => {
+        this.routerService.sumField = map;
+      }, 10)
     })
 
-    this.socket.on("turnIsNotOver", () => {
+    routerService.socket.on("turnIsNotOver", () => {
       alert("Du hat noch nicht 3 mal gewürfelt!");
+    })
+
+    routerService.socket.on("turnIsOver", () => {
+      alert("Du hast bereits 3 mal gewürfelt!")
     })
   }
 
-
   throw() {
-    this.socket.emit("throw", ({
+    this.routerService.socket.emit("throw", ({
       receiveDices: [
         {dice: this.dices[0], change: false},
         {dice: this.dices[1], change: true},
@@ -76,12 +84,17 @@ export class AppComponent {
         {dice: this.dices[3], change: true},
         {dice: this.dices[4], change: true}
       ],
-      standardGameData: {serverName: this.serverName, playerName: this.playerName}
+      standardGameData: {serverName: this.routerService.serverName, playerName: this.routerService.playerName}
     } as ThrowData))
   }
 
-  setPoint() {
-    this.socket.emit("setPoint", ({standardGameData: {serverName: this.serverName, playerName: this.playerName}, field: "fours"} as SetPointData))
-  }
+  // setPoint() {
+  //   this.routerService.socket.emit("setPoint", ({
+  //     standardGameData: {
+  //       serverName: this.routerService.serverName,
+  //       playerName: this.routerService.playerName
+  //     }, field: "fours"
+  //   } as SetPointData))
+  // }
 
 }

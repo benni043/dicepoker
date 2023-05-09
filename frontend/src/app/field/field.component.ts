@@ -1,4 +1,5 @@
 import {Component} from '@angular/core';
+import {RouterService} from "../router.service";
 
 @Component({
   selector: 'app-field',
@@ -6,6 +7,9 @@ import {Component} from '@angular/core';
   styleUrls: ['./field.component.scss']
 })
 export class FieldComponent {
+
+  constructor(private routerService: RouterService) {
+  }
 
   map: Map<string, {
     ones: number,
@@ -19,51 +23,7 @@ export class FieldComponent {
     poker: number,
     grande: number,
     doubleGrande: number
-  }> = new Map();
-
-  constructor() {
-    this.map.set("benni043", {
-      ones: 123,
-      twos: 2,
-      threes: 4,
-      fours: 0,
-      fives: 0,
-      sixes: 43,
-      fullHouse: 34,
-      street: 34,
-      poker: 34,
-      grande: 34,
-      doubleGrande: 3
-    });
-
-    this.map.set("tobnion", {
-      ones: 123,
-      twos: 2,
-      threes: 4,
-      fours: 3,
-      fives: 24,
-      sixes: 43,
-      fullHouse: 34,
-      street: 34,
-      poker: 34,
-      grande: 34,
-      doubleGrande: 3
-    });
-
-    this.map.set("götzesdfgsdfg", {
-      ones: 123,
-      twos: 2,
-      threes: 4,
-      fours: 3,
-      fives: 24,
-      sixes: 43,
-      fullHouse: 34,
-      street: 34,
-      poker: 34,
-      grande: 34,
-      doubleGrande: 3
-    });
-  }
+  }> = this.routerService.sumField!;
 
   list: string[] = ["ones", "twos", "threes", "fours", "fives", "sixes", "fullHouse", "street", "poker", "grande", "doubleGrande"];
 
@@ -89,8 +49,7 @@ export class FieldComponent {
     return list;
   }
 
-  click(i: number): string {
-    console.log(this.list[i])
-    return this.list[i];
+  click(i: number): void {
+    this.routerService.sendValue(this.list[i]);
   }
 }

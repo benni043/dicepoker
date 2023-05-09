@@ -66,7 +66,8 @@ export enum ReturnEnum {
     playerNotOnTurnErr,
     throwSuccessEnd,
     setSuccess,
-    turnIsNotOver
+    turnIsNotOver,
+    turnIsOver
 }
 
 export type JoinReturn = {
@@ -77,7 +78,7 @@ export type JoinReturn = {
 export type ThrowReturn = {
     returnEnum: ReturnEnum,
     response: Dice[] | null,
-    pointsField: SetPointsField | null;
+    sumField: Map<string, SetPointsField> | null,
 }
 
 export type SetPointsField = {
@@ -95,7 +96,7 @@ export type SetPointsField = {
 }
 
 export type TurnEnd = {
-    pointsField: SetPointsField | null,
+    sumField: Map<string, SetPointsField> | null,
     end: boolean;
 }
 
@@ -106,7 +107,7 @@ export type End = {
 
 export type SetPointsReturn = {
     returnEnum: ReturnEnum
-    points: number,
+    sumField: Map<string, SetPointsField> | null,
 }
 
 export type SetPointData = {

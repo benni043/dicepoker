@@ -1,9 +1,9 @@
 <app-join></app-join>
 
-<!--<div>-->
-<!--  <button (click)="throw()">Würfeln</button>-->
+<div>
+  <button (click)="throw()">Würfeln</button>
 
 <!--  <button (click)="setPoint()">set</button>-->
-<!--</div>-->
+</div>
 
-<app-field></app-field>
+<app-field *ngIf="routerService.sumField != undefined"></app-field>

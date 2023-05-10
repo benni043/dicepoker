@@ -7,18 +7,24 @@ import {FormsModule} from "@angular/forms";
 import { FieldComponent } from './field/field.component';
 import { JoinComponent } from './join/join.component';
 import { CreateComponent } from './create/create.component';
+import { DiceComponent } from './dice/dice.component';
+import { DiceDisplayComponent } from './dice-display/dice-display.component';
+import {NgOptimizedImage} from "@angular/common";
 
 @NgModule({
   declarations: [
     AppComponent,
     FieldComponent,
     JoinComponent,
-    CreateComponent
+    CreateComponent,
+    DiceComponent,
+    DiceDisplayComponent
   ],
     imports: [
         BrowserModule,
         AppRoutingModule,
-        FormsModule
+        FormsModule,
+        NgOptimizedImage
     ],
   providers: [],
   bootstrap: [AppComponent]

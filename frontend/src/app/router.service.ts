@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Socket} from "socket.io-client";
-import {SetPointsField} from "../../../utils/game";
+import {SetPointsField} from "../../../backend/src/game";
+
 
 @Injectable({
   providedIn: 'root'

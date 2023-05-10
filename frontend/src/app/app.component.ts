@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {connect} from "socket.io-client";
-import {Dice, SetPointData, SetPointsField, ThrowData, ThrowReturn} from "../../../utils/game";
+import {Dice, SetPointsField, ThrowData} from "../../../backend/src/game";
 import {RouterService} from "./router.service";
 
 @Component({

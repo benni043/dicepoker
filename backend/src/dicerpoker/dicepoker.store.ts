@@ -8,7 +8,7 @@ import {
     SetPointsField,
     StandardGameData,
     TurnEnd
-} from "../../../utils/game";
+} from "../game";
 import {Socket} from "socket.io";
 
 export class DicepokerStore {

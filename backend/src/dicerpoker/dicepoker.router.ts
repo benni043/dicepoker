@@ -11,7 +11,7 @@ import {
     StandardGameData,
     ThrowData,
     ThrowReturn
-} from "../../../utils/game";
+} from "../game";
 
 export class DicepokerRouter {
 

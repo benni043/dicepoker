@@ -9,7 +9,7 @@ import {
     SetPointsReturn,
     StandardGameData,
     ThrowReturn
-} from "../../../utils/game";
+} from "../game";
 import {Socket} from "socket.io";
 
 export class DicepokerService {

@@ -1,14 +1,13 @@
 import {DicepokerStore} from "./dicepoker.store";
 import {
-    End,
+    ChangeDiceObject,
     GameState,
-    JoinResponseData,
     JoinReturn,
-    ReceiveDice,
+    PlayerSockets,
+    PointsField,
     ReturnEnum,
-    SetPointsReturn,
     StandardGameData,
-    ThrowReturn
+    Throw
 } from "../game";
 import {Socket} from "socket.io";
 
@@ -25,61 +24,110 @@ export class DicepokerService {
             return {returnEnum: ReturnEnum.illegalPlayerErr, response: null};
         }
 
-        let response: JoinResponseData = this.dicerpokerStore.join(standardGameData, ws);
+        let response: PlayerSockets = this.dicerpokerStore.join(standardGameData, ws);
         return {returnEnum: ReturnEnum.joinSuccess, response: response};
     }
 
-    throw(receiveDices: ReceiveDice[], playerName: string, serverName: number): ThrowReturn {
+    throw(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Throw | ReturnEnum {
         if (this.dicerpokerStore.getGameState(serverName) != GameState.running) {
-            return {returnEnum: ReturnEnum.gameNotStartedErr, response: null, sumField: null};
+            return ReturnEnum.gameNotStartedErr
         }
 
         if (!this.dicerpokerStore.checkIfPlayerExists(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.illegalPlayerErr, response: null, sumField: null};
+            return ReturnEnum.illegalPlayerErr
         }
 
         if (!this.dicerpokerStore.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.playerNotOnTurnErr, response: null, sumField: null};
+            return ReturnEnum.playerNotOnTurnErr
         }
 
         if (this.dicerpokerStore.checkIfPlayersTurnIsOver(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.turnIsOver, response: null, sumField: null};
+            return ReturnEnum.turnIsOver
         }
 
-        let response: End = this.dicerpokerStore.changeDices(receiveDices, playerName, serverName);
-
-        if (response.turnEnd == null) {
-            return {returnEnum: ReturnEnum.throwSuccess, response: response.dices, sumField: null}
-        } else {
-            return {
-                returnEnum: ReturnEnum.throwSuccessEnd,
-                response: response.dices,
-                sumField: response.turnEnd.sumField
-            }
-        }
+        return this.dicerpokerStore.changeDices(receiveDices, playerName, serverName);
     }
 
-    setPoints(playerName: string, serverName: number, field: string): SetPointsReturn {
+    setPoint(playerName: string, serverName: number, field: string): ReturnEnum {
         if (this.dicerpokerStore.getGameState(serverName) != GameState.running) {
-            return {returnEnum: ReturnEnum.gameNotStartedErr, sumField: null};
+            return ReturnEnum.gameNotStartedErr
         }
 
         if (!this.dicerpokerStore.checkIfPlayerExists(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.illegalPlayerErr, sumField: null};
+            return ReturnEnum.illegalPlayerErr
         }
 
         if (!this.dicerpokerStore.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.playerNotOnTurnErr, sumField: null};
+            return ReturnEnum.playerNotOnTurnErr
         }
 
-        if(!this.dicerpokerStore.checkIfPlayersTurnIsOver(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.turnIsNotOver, sumField: null};
+        if (!this.dicerpokerStore.checkIfPlayersTurnIsOver(serverName, playerName)) {
+            return ReturnEnum.turnIsNotOver
         }
 
-        return {
-            returnEnum: ReturnEnum.setSuccess,
-            sumField: this.dicerpokerStore.setPoints(playerName, serverName, field)
-        };
+        this.dicerpokerStore.setPointsToGameView(playerName, serverName, field);
+        return ReturnEnum.setSuccess;
+    }
+
+    getPlayersField(playerName: string, serverName: number): Map<string, PointsField> | ReturnEnum {
+        if (this.dicerpokerStore.getGameState(serverName) != GameState.running) {
+            return ReturnEnum.gameNotStartedErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayerExists(serverName, playerName)) {
+            return ReturnEnum.illegalPlayerErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayerIsOnTurn(serverName, playerName)) {
+            return ReturnEnum.playerNotOnTurnErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayersTurnIsOver(serverName, playerName)) {
+            return ReturnEnum.turnIsNotOver
+        }
+
+        return this.dicerpokerStore.getPlayersField(playerName, serverName);
+    }
+
+    getSumField(playerName: string, serverName: number): Map<string, PointsField> | ReturnEnum {
+        if (this.dicerpokerStore.getGameState(serverName) != GameState.running) {
+            return ReturnEnum.gameNotStartedErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayerExists(serverName, playerName)) {
+            return ReturnEnum.illegalPlayerErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayerIsOnTurn(serverName, playerName)) {
+            return ReturnEnum.playerNotOnTurnErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayersTurnIsOver(serverName, playerName)) {
+            return ReturnEnum.turnIsNotOver
+        }
+
+        return this.dicerpokerStore.getSumField(playerName, serverName);
+    }
+
+    turnChange(playerName: string, serverName: number): string | ReturnEnum {
+        if (this.dicerpokerStore.getGameState(serverName) != GameState.running) {
+            return ReturnEnum.gameNotStartedErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayerExists(serverName, playerName)) {
+            return ReturnEnum.illegalPlayerErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayerIsOnTurn(serverName, playerName)) {
+            return ReturnEnum.playerNotOnTurnErr
+        }
+
+        if (!this.dicerpokerStore.checkIfPlayersTurnIsOver(serverName, playerName)) {
+            return ReturnEnum.turnIsNotOver
+        }
+
+        console.log(1)
+        return this.dicerpokerStore.turnChange(playerName, serverName);
     }
 
 }

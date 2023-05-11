@@ -1,13 +1,14 @@
 import {
+    ChangeDiceObject,
     Dice,
-    End,
     Game,
     GameState,
-    JoinResponseData,
-    ReceiveDice,
-    SetPointsField,
+    Player,
+    PlayerSockets,
+    PointsField,
+    ReturnEnum,
     StandardGameData,
-    TurnEnd
+    Throw
 } from "../game";
 import {Socket} from "socket.io";
 
@@ -15,7 +16,16 @@ export class DicepokerStore {
 
     private game: Map<number, Game> = new Map();
 
-    join(standardGameData: StandardGameData, ws: Socket): JoinResponseData {
+    turnChange(playerName: string, serverName: number) {
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
+
+        console.log(0)
+        if (player.isOnMove) return player.playerName;
+        else return opponent.playerName;
+    }
+
+    join(standardGameData: StandardGameData, ws: Socket): PlayerSockets {
         if (!this.game.has(standardGameData.serverName)) {
             this.game.set(standardGameData.serverName, {
                 player1: {
@@ -93,11 +103,9 @@ export class DicepokerStore {
             });
 
             return {
-                responseDicesPlayer1: this.game.get(standardGameData.serverName)!.player1.dices,
-                responseDicesPlayer2: this.game.get(standardGameData.serverName)!.player2.dices,
                 player1ws: this.game.get(standardGameData.serverName)!.player1.socket,
                 player2ws: this.game.get(standardGameData.serverName)!.player2.socket,
-            } as JoinResponseData
+            } as PlayerSockets
 
         } else {
             this.game.get(standardGameData.serverName)!.state = GameState.running;
@@ -108,36 +116,21 @@ export class DicepokerStore {
             this.game.get(standardGameData.serverName)!.player2.isOnline = true;
             this.game.get(standardGameData.serverName)!.player2.socket = ws;
 
-            let fiveRandomDices1 = this.getNRandomDices(5);
-            for (let fiveRandomDice of fiveRandomDices1) {
-                this.game.get(standardGameData.serverName)!.player1.dices.push(fiveRandomDice);
-            }
-            this.game.get(standardGameData.serverName)!.player1.movesLeft--;
+            // let fiveRandomDices1 = this.getNRandomDices(5);
+            // for (let fiveRandomDice of fiveRandomDices1) {
+            //     this.game.get(standardGameData.serverName)!.player1.dices.push(fiveRandomDice);
+            // }
+            // this.game.get(standardGameData.serverName)!.player1.movesLeft--;
 
             return {
-                responseDicesPlayer1: this.game.get(standardGameData.serverName)!.player1.dices,
-                responseDicesPlayer2: this.game.get(standardGameData.serverName)!.player2.dices,
                 player1ws: this.game.get(standardGameData.serverName)!.player1.socket,
                 player2ws: this.game.get(standardGameData.serverName)!.player2.socket,
-            } as JoinResponseData
+            } as PlayerSockets
         }
     }
 
-    setPoints(playerName: string, serverName: number, field: string): Map<string, {
-        ones: number,
-        twos: number,
-        threes: number,
-        fours: number,
-        fives: number,
-        sixes: number,
-        fullHouse: number,
-        street: number,
-        poker: number,
-        grande: number,
-        doubleGrande: number
-    }> {
+    setPointsToGameView(playerName: string, serverName: number, field: string): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
 
         switch (field) {
             case "ones": {
@@ -196,6 +189,16 @@ export class DicepokerStore {
                 break
             }
         }
+    }
+
+    getSumField(playerName: string, serverName: number): Map<string, PointsField> {
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
+
+        let map: Map<string, PointsField> = new Map();
+
+        map.set(player.playerName, player.pointsField);
+        map.set(opponent.playerName, opponent.pointsField);
 
         player.isOnMove = false;
         player.movesLeft = 3;
@@ -216,27 +219,20 @@ export class DicepokerStore {
 
         opponent.isOnMove = true;
 
-        let map: Map<string, {
-            ones: number,
-            twos: number,
-            threes: number,
-            fours: number,
-            fives: number,
-            sixes: number,
-            fullHouse: number,
-            street: number,
-            poker: number,
-            grande: number,
-            doubleGrande: number
-        }> = new Map();
+        return map;
+    }
 
-        map.set(player.playerName, player.pointsField);
-        map.set(opponent.playerName, opponent.pointsField);
+    getPlayersField(playerName: string, serverName: number): Map<string, PointsField> {
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+
+        let map: Map<string, PointsField> = new Map();
+
+        map.set(player.playerName, player.pointsFieldTMP);
 
         return map;
     }
 
-    changeDices(receiveDices: ReceiveDice[], playerName: string, serverName: number): End {
+    changeDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Throw {
         let newDices: Dice[] = []
 
         for (let receiveDice of receiveDices) {
@@ -249,48 +245,31 @@ export class DicepokerStore {
 
         let response = this.setPlayerSettings(serverName, playerName, newDices);
 
-        if (response.end) {
-            return {turnEnd: {end: true, sumField: response.sumField}, dices: newDices}
+        if (response) {
+            return {returnEnum: ReturnEnum.throwSuccess, dices: newDices, end: true};
         } else {
-            return {turnEnd: null, dices: newDices}
+            return {returnEnum: ReturnEnum.throwSuccess, dices: newDices, end: false};
         }
     }
 
-    setPlayerSettings(serverName: number, playerName: string, newDices: Dice[]): TurnEnd {
+    setPlayerSettings(serverName: number, playerName: string, newDices: Dice[]): boolean {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
 
         player.dices = newDices;
         player.movesLeft--;
 
-        if (player.movesLeft == 0) {
-            let pointsField: SetPointsField = this.calculateSetPointsField(newDices);
+        player.pointsFieldTMP = this.calculateSetPointsField(newDices);
+        console.log(player.pointsFieldTMP)
 
-            player.pointsFieldTMP = pointsField;
-
-            let map: Map<string, {
-                ones: number,
-                twos: number,
-                threes: number,
-                fours: number,
-                fives: number,
-                sixes: number,
-                fullHouse: number,
-                street: number,
-                poker: number,
-                grande: number,
-                doubleGrande: number
-            }> = new Map();
-
-            map.set(player.playerName, player.pointsFieldTMP);
-
-            return {end: true, sumField: map};
-        }
-
-        return {end: false, sumField: null}
+        return this.checkIfPlayersLastMove(player);
     }
 
-    calculateSetPointsField(dices: Dice[]): SetPointsField {
-        let setPoints: SetPointsField = {
+    checkIfPlayersLastMove(player: Player): boolean {
+        return player.movesLeft == 0;
+    }
+
+    calculateSetPointsField(dices: Dice[]): PointsField {
+        let setPoints: PointsField = {
             ones: 0,
             twos: 0,
             threes: 0,
@@ -368,6 +347,9 @@ export class DicepokerStore {
 
         return setPoints;
     }
+
+
+    //custom check functions
 
     dices: Dice[] = [Dice.one, Dice.two, Dice.three, Dice.four, Dice.five, Dice.six];
 

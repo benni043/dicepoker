@@ -2,4 +2,7 @@
 
 <app-dice-display [dices]="routerService.dices"></app-dice-display>
 
-<app-field *ngIf="routerService.sumField != undefined"></app-field>
+<app-field [readonlyV]="true" [map]="routerService.sumField" *ngIf="routerService.sumField != undefined"></app-field>
+<app-field [readonlyV]="false" [map]="routerService.playersField" *ngIf="routerService.playersField != undefined"></app-field>
+
+<h1>{{routerService.activePlayer}}</h1>

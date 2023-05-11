@@ -3,15 +3,7 @@ import cors from "cors";
 import * as http from "http";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
-import {
-    JoinReturn,
-    ReturnEnum,
-    SetPointData,
-    SetPointsReturn,
-    StandardGameData,
-    ThrowData,
-    ThrowReturn
-} from "../game";
+import {JoinReturn, PointsField, ReturnEnum, SetPointData, StandardGameData, Throw, ThrowData} from "../game";
 
 export class DicepokerRouter {
 
@@ -31,10 +23,10 @@ export class DicepokerRouter {
                 let res: JoinReturn = this.dicepokerService.join(standardGameData, ws);
 
                 if (res.returnEnum == ReturnEnum.joinSuccess) {
-                    res.response!.player1ws.emit("joinSuccess", res.response!.responseDicesPlayer1);
+                    res.response!.player1ws.emit("joinSuccess");
 
                     if (res.response!.player2ws != undefined) {
-                        res.response!.player2ws.emit("joinSuccess", res.response!.responseDicesPlayer2);
+                        res.response!.player2ws.emit("joinSuccess");
                     }
                 } else if (res.returnEnum == ReturnEnum.illegalPlayerErr) {
                     ws.emit("illegalPlayerErr");
@@ -44,36 +36,86 @@ export class DicepokerRouter {
             });
 
             ws.on("throw", (throwData: ThrowData) => {
-                let res: ThrowReturn = this.dicepokerService.throw(throwData.receiveDices, throwData.standardGameData.playerName, throwData.standardGameData.serverName);
+                let res: Throw | ReturnEnum = this.dicepokerService.throw(throwData.receiveDices, throwData.standardGameData.playerName, throwData.standardGameData.serverName);
 
-                if (res.returnEnum == ReturnEnum.gameNotStartedErr) {
+                if (res == ReturnEnum.gameNotStartedErr) {
                     ws.emit("gameNotStartedErr");
-                } else if (res.returnEnum == ReturnEnum.illegalPlayerErr) {
+                } else if (res == ReturnEnum.illegalPlayerErr) {
                     ws.emit("illegalPlayerErr");
-                } else if (res.returnEnum == ReturnEnum.playerNotOnTurnErr) {
+                } else if (res == ReturnEnum.playerNotOnTurnErr) {
                     ws.emit("playerNotOnTurnErr")
-                } else if (res.returnEnum == ReturnEnum.throwSuccess) {
-                    ws.emit("throwSuccess", res.response);
-                } else if (res.returnEnum == ReturnEnum.turnIsOver) {
+                } else if (res == ReturnEnum.turnIsOver) {
                     ws.emit("turnIsOver");
-                } else if (res.returnEnum == ReturnEnum.throwSuccessEnd) {
-                    ws.emit("throwSuccessEnd", {sumField: JSON.stringify(Array.from(res.sumField!.entries())), dices: res.response})
+                } else
+                    ws.emit("throwSuccess", res);
+            });
+
+            ws.on("getPlayersField", (standardGameData: StandardGameData) => {
+                let res: Map<string, PointsField> | ReturnEnum = this.dicepokerService.getPlayersField(standardGameData.playerName, standardGameData.serverName);
+
+                if (res == ReturnEnum.gameNotStartedErr) {
+                    ws.emit("gameNotStartedErr");
+                } else if (res == ReturnEnum.illegalPlayerErr) {
+                    ws.emit("illegalPlayerErr");
+                } else if (res == ReturnEnum.playerNotOnTurnErr) {
+                    ws.emit("playerNotOnTurnErr")
+                } else if (res == ReturnEnum.turnIsNotOver) {
+                    ws.emit("turnIsNotOver");
+                }
+                if ((res instanceof Map<string, PointsField>)) {
+                    ws.emit("setPlayersField", JSON.stringify(Array.from(res.entries())));
                 }
             });
 
-            ws.on("setPoint", (setPointData: SetPointData) => {
-                let res: SetPointsReturn = this.dicepokerService.setPoints(setPointData.standardGameData.playerName, setPointData.standardGameData.serverName, setPointData.field);
+            ws.on("getSumField", (standardGameData: StandardGameData) => {
+                let res: Map<string, PointsField> | ReturnEnum = this.dicepokerService.getSumField(standardGameData.playerName, standardGameData.serverName);
 
-                if (res.returnEnum == ReturnEnum.gameNotStartedErr) {
+                if (res == ReturnEnum.gameNotStartedErr) {
                     ws.emit("gameNotStartedErr");
-                } else if (res.returnEnum == ReturnEnum.illegalPlayerErr) {
+                } else if (res == ReturnEnum.illegalPlayerErr) {
                     ws.emit("illegalPlayerErr");
-                } else if (res.returnEnum == ReturnEnum.playerNotOnTurnErr) {
+                } else if (res == ReturnEnum.playerNotOnTurnErr) {
                     ws.emit("playerNotOnTurnErr")
-                } else if (res.returnEnum == ReturnEnum.turnIsNotOver) {
+                } else if (res == ReturnEnum.turnIsNotOver) {
                     ws.emit("turnIsNotOver");
-                } else if (res.returnEnum == ReturnEnum.setSuccess) {
-                    ws.emit("setSuccess", JSON.stringify(Array.from(res.sumField!.entries())));
+                }
+
+                if ((res instanceof Map<string, PointsField>)) {
+                    ws.emit("setSumField", JSON.stringify(Array.from(res.entries())));
+                }
+            })
+
+            ws.on("setField", (setPointData: SetPointData) => {
+                let res: ReturnEnum = this.dicepokerService.setPoint(setPointData.standardGameData.playerName, setPointData.standardGameData.serverName, setPointData.field);
+
+                if (res == ReturnEnum.gameNotStartedErr) {
+                    ws.emit("gameNotStartedErr");
+                } else if (res == ReturnEnum.illegalPlayerErr) {
+                    ws.emit("illegalPlayerErr");
+                } else if (res == ReturnEnum.playerNotOnTurnErr) {
+                    ws.emit("playerNotOnTurnErr")
+                } else if (res == ReturnEnum.turnIsNotOver) {
+                    ws.emit("turnIsNotOver");
+                } else if (res == ReturnEnum.setSuccess) {
+                    ws.emit("setSuccess");
+                }
+            })
+
+            ws.on("turnChange", (standardGameData: StandardGameData) => {
+                let res: string | ReturnEnum = this.dicepokerService.turnChange(standardGameData.playerName, standardGameData.serverName);
+                console.log(4)
+
+                if (res == ReturnEnum.gameNotStartedErr) {
+                    ws.emit("gameNotStartedErr");
+                } else if (res == ReturnEnum.illegalPlayerErr) {
+                    ws.emit("illegalPlayerErr");
+                } else if (res == ReturnEnum.playerNotOnTurnErr) {
+                    ws.emit("playerNotOnTurnErr")
+                } else if (res == ReturnEnum.turnIsNotOver) {
+                    ws.emit("turnIsNotOver");
+                } else {
+                    console.log(3)
+                    ws.emit("yourTurn", res)
                 }
             })
         });

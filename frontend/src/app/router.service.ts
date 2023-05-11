@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {connect, Socket} from "socket.io-client";
-import {Dice, ReceiveDice, SetPointsField} from "../../../backend/src/game";
+import {ChangeDiceObject, Dice, PointsField, StandardGameData, Throw} from "../../../backend/src/game";
 
 
 @Injectable({
@@ -11,12 +11,8 @@ export class RouterService {
   constructor() {
     this.socket = connect("http://localhost:3000/");
 
-    this.socket.on("joinSuccess", (dices: Dice[]) => {
+    this.socket.on("joinSuccess", () => {
       console.log("joinSucc")
-      for (let dice of dices) {
-        this.dices.push(dice);
-      }
-      console.log(this.dices)
     })
 
     this.socket.on("gameFullErr", () => {
@@ -32,66 +28,92 @@ export class RouterService {
     })
 
     this.socket.on("playerNotOnTurnErr", () => {
-      alert("Du bist nicht an der Reihe!");
-    })
-
-    this.socket.on("throwSuccess", (newDices: Dice[]) => {
-      this.dices = newDices
-      console.log(this.dices)
-    })
-
-    this.socket.on("throwSuccessEnd", (throwReturn) => {
-      let map: Map<string, SetPointsField> = new Map(JSON.parse(throwReturn.sumField));
-
-      this.sumField = null;
-      setTimeout(() => {
-        this.sumField = map;
-        this.dices = [];
-      }, 10);
-    })
-
-    this.socket.on("setSuccess", (sumField) => {
-      let map: Map<string, SetPointsField> = new Map(JSON.parse(sumField));
-
-      this.sumField = null;
-      setTimeout(() => {
-        this.sumField = map;
-      }, 10)
+      console.log("Du bist nicht an der Reihe!");
     })
 
     this.socket.on("turnIsNotOver", () => {
-      alert("Du hat noch nicht 3 mal gewürfelt!");
+      console.log("Du hat noch nicht 3 mal gewürfelt!");
     })
 
     this.socket.on("turnIsOver", () => {
-      alert("Du hast bereits 3 mal gewürfelt!")
+      console.log("Du hast bereits 3 mal gewürfelt!")
+    })
+
+
+    this.socket.on("throwSuccess", (res: Throw) => {
+      this.dices = res.dices;
+
+      if (res.end) {
+        this.socket.emit("getPlayersField", ({
+          playerName: this.playerName,
+          serverName: this.serverName
+        } as StandardGameData))
+      }
+    })
+
+    this.socket.on("setPlayersField", (playersField) => {
+      let map: Map<string, PointsField> = new Map(JSON.parse(playersField));
+
+      this.sumField = null;
+      this.playersField = null;
+      setTimeout(() => {
+        this.playersField = map;
+      }, 10)
+    })
+
+    this.socket.on("setSuccess", () => {
+      this.socket.emit("getSumField", ({playerName: this.playerName, serverName: this.serverName} as StandardGameData))
+    })
+
+    this.socket.on("setSumField", (sumField) => {
+      let map: Map<string, PointsField> = new Map(JSON.parse(sumField));
+
+      this.playersField = null;
+      this.sumField = null;
+      this.dices = [];
+
+      setTimeout(() => {
+        this.sumField = map;
+        this.socket.emit("turnChange", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
+      }, 10)
+    })
+
+    this.socket.on("yourTurn", (activePlayer) => {
+      this.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
+
+      this.activePlayer = activePlayer;
+      console.log(activePlayer)
     })
   }
 
   socket!: Socket;
 
+  activePlayer: string = "";
+
   playerName: string = "";
   serverName: number = 0;
 
-  sumField!: Map<string, SetPointsField> | null;
+  sumField!: Map<string, PointsField> | null;
+  playersField!: Map<string, PointsField> | null;
 
-  dices: Dice[] = [];
+  dices: Dice[] = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
 
   join(playerName: string, serverName: number) {
     this.playerName = playerName;
     this.serverName = serverName;
 
+    this.socket.emit("turnChange", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
     this.socket.emit("joinToGame", {serverName: serverName, playerName: playerName});
   }
 
   sendValue(elem: string) {
-    this.socket.emit("setPoint", {
+    this.socket.emit("setField", {
       field: elem,
       standardGameData: {serverName: this.serverName, playerName: this.playerName}
     })
   }
 
-  throw(receiveDices: ReceiveDice[]) {
+  throw(receiveDices: ChangeDiceObject[]) {
     this.socket.emit("throw", ({
       receiveDices: receiveDices,
       standardGameData: {serverName: this.serverName, playerName: this.playerName}

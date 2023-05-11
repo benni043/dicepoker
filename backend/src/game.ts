@@ -15,8 +15,8 @@ export type Player = {
     movesLeft: number,
     isOnline: boolean,
     isOnMove: boolean,
-    pointsField: SetPointsField,
-    pointsFieldTMP: SetPointsField
+    pointsField: PointsField,
+    pointsFieldTMP: PointsField
 }
 
 export enum GameState {
@@ -35,26 +35,18 @@ export enum Dice {
     six
 }
 
-export type ReceiveDice = {
-    dice: Dice,
-    change: boolean
-}
-
-export type JoinResponseData = {
-    responseDicesPlayer1: Dice[],
-    responseDicesPlayer2: Dice[],
-    player1ws: Socket,
-    player2ws: Socket,
-}
-
-export type StandardGameData = {
-    serverName: number,
-    playerName: string,
-}
-
-export type ThrowData = {
-    standardGameData: StandardGameData,
-    receiveDices: ReceiveDice[]
+export type PointsField = {
+    ones: number,
+    twos: number,
+    threes: number,
+    fours: number,
+    fives: number,
+    sixes: number,
+    fullHouse: number,
+    street: number,
+    poker: number,
+    grande: number,
+    doubleGrande: number
 }
 
 export enum ReturnEnum {
@@ -70,44 +62,40 @@ export enum ReturnEnum {
     turnIsOver
 }
 
+export type StandardGameData = {
+    serverName: number,
+    playerName: string,
+}
+
+export type ChangeDiceObject = {
+    dice: Dice,
+    change: boolean
+}
+
+export type PlayerSockets = {
+    player1ws: Socket,
+    player2ws: Socket,
+}
+
+export type Throw = {
+    returnEnum: ReturnEnum,
+    dices: Dice[],
+    end: boolean
+}
+
+export type ThrowData = {
+    standardGameData: StandardGameData,
+    receiveDices: ChangeDiceObject[]
+}
+
 export type JoinReturn = {
     returnEnum: ReturnEnum,
-    response: JoinResponseData | null
-}
-
-export type ThrowReturn = {
-    returnEnum: ReturnEnum,
-    response: Dice[] | null,
-    sumField: Map<string, SetPointsField> | null,
-}
-
-export type SetPointsField = {
-    ones: number,
-    twos: number,
-    threes: number,
-    fours: number,
-    fives: number,
-    sixes: number,
-    fullHouse: number,
-    street: number,
-    poker: number,
-    grande: number,
-    doubleGrande: number
-}
-
-export type TurnEnd = {
-    sumField: Map<string, SetPointsField> | null,
-    end: boolean;
-}
-
-export type End = {
-    turnEnd: TurnEnd | null,
-    dices: Dice[];
+    response: PlayerSockets | null
 }
 
 export type SetPointsReturn = {
     returnEnum: ReturnEnum
-    sumField: Map<string, SetPointsField> | null,
+    sumField: Map<string, PointsField> | null,
 }
 
 export type SetPointData = {

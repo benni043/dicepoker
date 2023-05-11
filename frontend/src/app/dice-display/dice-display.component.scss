@@ -1,0 +1,12 @@
+#dices {
+  background-color: aqua;
+}
+
+#holdDices {
+  background-color: aquamarine;
+}
+
+#dices, #holdDices {
+  display: flex;
+  max-width: min-content;
+}

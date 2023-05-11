@@ -1,4 +1,4 @@
-import {Component} from '@angular/core';
+import {Component, Input} from '@angular/core';
 import {RouterService} from "../router.service";
 
 @Component({
@@ -11,7 +11,7 @@ export class FieldComponent {
   constructor(private routerService: RouterService) {
   }
 
-  map: Map<string, {
+  @Input() map!: Map<string, {
     ones: number,
     twos: number,
     threes: number,
@@ -23,7 +23,9 @@ export class FieldComponent {
     poker: number,
     grande: number,
     doubleGrande: number
-  }> = this.routerService.sumField!;
+  }>;
+
+  @Input() readonlyV: boolean = true;
 
   list: string[] = ["ones", "twos", "threes", "fours", "fives", "sixes", "fullHouse", "street", "poker", "grande", "doubleGrande"];
 
@@ -50,6 +52,8 @@ export class FieldComponent {
   }
 
   click(i: number): void {
-    this.routerService.sendValue(this.list[i]);
+    if (!this.readonlyV) {
+      this.routerService.sendValue(this.list[i]);
+    }
   }
 }

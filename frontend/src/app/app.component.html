@@ -1,8 +1,11 @@
-<app-join></app-join>
+<app-join *ngIf="!routerService.joined"></app-join>
 
-<app-dice-display [dices]="routerService.dices"></app-dice-display>
+<div *ngIf="routerService.joined">
+  <app-dice-display [holdDices]="routerService.holdDices" [dices]="routerService.dices"></app-dice-display>
 
-<app-field [readonlyV]="true" [map]="routerService.sumField" *ngIf="routerService.sumField != undefined"></app-field>
-<app-field [readonlyV]="false" [map]="routerService.playersField" *ngIf="routerService.playersField != undefined"></app-field>
+  <app-field [readonlyV]="true" [playersField]="false" [map]="routerService.sumField" *ngIf="routerService.sumField != undefined"></app-field>
+  <app-field [readonlyV]="false" [playersField]="true" [map]="routerService.playersField" *ngIf="routerService.playersField != undefined"></app-field>
 
-<h1>{{routerService.activePlayer}}</h1>
+  <h2>Ich: {{routerService.playerName}}</h2>
+  <h1>Aktueller Spieler: {{routerService.activePlayer}}</h1>
+</div>

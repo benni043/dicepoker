@@ -10,4 +10,4 @@
   </div>
 </div>
 
-<button (click)="throw()">Würfeln</button>
+<button (click)="throw()" [disabled]="!canMove() || routerService.throwEnd || routerService.end">Würfeln</button>

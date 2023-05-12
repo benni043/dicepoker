@@ -4,7 +4,6 @@ import {
     Game,
     GameState,
     Player,
-    PlayerSockets,
     PointsField,
     ReturnEnum,
     StandardGameData,
@@ -16,16 +15,7 @@ export class DicepokerStore {
 
     private game: Map<number, Game> = new Map();
 
-    turnChange(playerName: string, serverName: number) {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
-
-        console.log(0)
-        if (player.isOnMove) return player.playerName;
-        else return opponent.playerName;
-    }
-
-    join(standardGameData: StandardGameData, ws: Socket): PlayerSockets {
+    join(standardGameData: StandardGameData, ws: Socket): void {
         if (!this.game.has(standardGameData.serverName)) {
             this.game.set(standardGameData.serverName, {
                 player1: {
@@ -37,30 +27,32 @@ export class DicepokerStore {
                     socket: ws,
                     isOnMove: false,
                     pointsField: {
-                        ones: 0,
-                        twos: 0,
-                        threes: 0,
-                        fours: 0,
-                        fives: 0,
-                        sixes: 0,
-                        fullHouse: 0,
-                        street: 0,
-                        poker: 0,
-                        grande: 0,
-                        doubleGrande: 0,
+                        ones: -1,
+                        twos: -1,
+                        threes: -1,
+                        fours: -1,
+                        fives: -1,
+                        sixes: -1,
+                        fullHouse: -1,
+                        street: -1,
+                        poker: -1,
+                        grande: -1,
+                        doubleGrande: -1,
+                        sum: 0
                     },
                     pointsFieldTMP: {
-                        ones: 0,
-                        twos: 0,
-                        threes: 0,
-                        fours: 0,
-                        fives: 0,
-                        sixes: 0,
-                        fullHouse: 0,
-                        street: 0,
-                        poker: 0,
-                        grande: 0,
-                        doubleGrande: 0,
+                        ones: -1,
+                        twos: -1,
+                        threes: -1,
+                        fours: -1,
+                        fives: -1,
+                        sixes: -1,
+                        fullHouse: -1,
+                        street: -1,
+                        poker: -1,
+                        grande: -1,
+                        doubleGrande: -1,
+                        sum: 0
                     }
                 },
                 player2: {
@@ -72,41 +64,37 @@ export class DicepokerStore {
                     socket: undefined,
                     isOnMove: false,
                     pointsField: {
-                        ones: 0,
-                        twos: 0,
-                        threes: 0,
-                        fours: 0,
-                        fives: 0,
-                        sixes: 0,
-                        fullHouse: 0,
-                        street: 0,
-                        poker: 0,
-                        grande: 0,
-                        doubleGrande: 0,
+                        ones: -1,
+                        twos: -1,
+                        threes: -1,
+                        fours: -1,
+                        fives: -1,
+                        sixes: -1,
+                        fullHouse: -1,
+                        street: -1,
+                        poker: -1,
+                        grande: -1,
+                        doubleGrande: -1,
+                        sum: 0
                     },
                     pointsFieldTMP: {
-                        ones: 0,
-                        twos: 0,
-                        threes: 0,
-                        fours: 0,
-                        fives: 0,
-                        sixes: 0,
-                        fullHouse: 0,
-                        street: 0,
-                        poker: 0,
-                        grande: 0,
-                        doubleGrande: 0,
+                        ones: -1,
+                        twos: -1,
+                        threes: -1,
+                        fours: -1,
+                        fives: -1,
+                        sixes: -1,
+                        fullHouse: -1,
+                        street: -1,
+                        poker: -1,
+                        grande: -1,
+                        doubleGrande: -1,
+                        sum: 0
                     }
                 },
                 state: GameState.joining,
                 numberOfPlayersWhoLeft: 0
             });
-
-            return {
-                player1ws: this.game.get(standardGameData.serverName)!.player1.socket,
-                player2ws: this.game.get(standardGameData.serverName)!.player2.socket,
-            } as PlayerSockets
-
         } else {
             this.game.get(standardGameData.serverName)!.state = GameState.running;
 
@@ -115,22 +103,64 @@ export class DicepokerStore {
             this.game.get(standardGameData.serverName)!.player2.playerName = standardGameData.playerName;
             this.game.get(standardGameData.serverName)!.player2.isOnline = true;
             this.game.get(standardGameData.serverName)!.player2.socket = ws;
-
-            // let fiveRandomDices1 = this.getNRandomDices(5);
-            // for (let fiveRandomDice of fiveRandomDices1) {
-            //     this.game.get(standardGameData.serverName)!.player1.dices.push(fiveRandomDice);
-            // }
-            // this.game.get(standardGameData.serverName)!.player1.movesLeft--;
-
-            return {
-                player1ws: this.game.get(standardGameData.serverName)!.player1.socket,
-                player2ws: this.game.get(standardGameData.serverName)!.player2.socket,
-            } as PlayerSockets
         }
+    }
+
+    checkIfFieldFree(playerName: string, serverName: number, field: string): boolean {
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+
+        switch (field) {
+            case "ones": {
+                if (player.pointsField.ones != -1) return false;
+                break
+            }
+            case "twos": {
+                if (player.pointsField.twos != -1) return false;
+                break
+            }
+            case "threes": {
+                if (player.pointsField.threes != -1) return false;
+                break
+            }
+            case "fours": {
+                if (player.pointsField.fours != -1) return false;
+                break
+            }
+            case "fives": {
+                if (player.pointsField.fives != -1) return false;
+                break
+            }
+            case "sixes": {
+                if (player.pointsField.sixes != -1) return false;
+                break
+            }
+            case "fullHouse": {
+                if (player.pointsField.fullHouse != -1) return false;
+                break
+            }
+            case "street": {
+                if (player.pointsField.street != -1) return false;
+                break
+            }
+            case "poker": {
+                if (player.pointsField.poker != -1) return false;
+                break
+            }
+            case "grande": {
+                if (player.pointsField.grande != -1) return false;
+                break
+            }
+            case "doubleGrande": {
+                if (player.pointsField.doubleGrande != -1) return false;
+                break
+            }
+        }
+        return true;
     }
 
     setPointsToGameView(playerName: string, serverName: number, field: string): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName != playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
 
         switch (field) {
             case "ones": {
@@ -189,6 +219,27 @@ export class DicepokerStore {
                 break
             }
         }
+
+        player.pointsField.sum = player.points;
+
+        if (this.checkIfGameEnd(player.pointsField) && this.checkIfGameEnd(opponent.pointsField)) this.game.get(serverName)!.state = GameState.finished
+
+        //muss noch besser
+        //am anfang mitt allen würfeln
+        //feld am anfang anzeigen
+        //mehr spieler
+        //mehr spalten
+        //rejoin
+        //delete game
+    }
+
+    checkIfGameEnd(pointsField: PointsField) {
+        for (const [key, value] of Object.entries(pointsField)) {
+            if (value === -1) {
+                return false;
+            }
+        }
+        return true;
     }
 
     getSumField(playerName: string, serverName: number): Map<string, PointsField> {
@@ -215,6 +266,7 @@ export class DicepokerStore {
             poker: 0,
             grande: 0,
             doubleGrande: 0,
+            sum: 0,
         }
 
         opponent.isOnMove = true;
@@ -232,7 +284,15 @@ export class DicepokerStore {
         return map;
     }
 
-    changeDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Throw {
+    turnChange(playerName: string, serverName: number) {
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
+
+        if (player.isOnMove) return player.playerName;
+        else return opponent.playerName;
+    }
+
+    getNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Throw {
         let newDices: Dice[] = []
 
         for (let receiveDice of receiveDices) {
@@ -246,9 +306,9 @@ export class DicepokerStore {
         let response = this.setPlayerSettings(serverName, playerName, newDices);
 
         if (response) {
-            return {returnEnum: ReturnEnum.throwSuccess, dices: newDices, end: true};
+            return {returnEnum: ReturnEnum.throwSuccess, dices: newDices, end: true, playerName: playerName};
         } else {
-            return {returnEnum: ReturnEnum.throwSuccess, dices: newDices, end: false};
+            return {returnEnum: ReturnEnum.throwSuccess, dices: newDices, end: false, playerName: playerName};
         }
     }
 
@@ -259,13 +319,14 @@ export class DicepokerStore {
         player.movesLeft--;
 
         player.pointsFieldTMP = this.calculateSetPointsField(newDices);
-        console.log(player.pointsFieldTMP)
 
-        return this.checkIfPlayersLastMove(player);
+        return this.checkIfPlayersLastMove(serverName, playerName);
     }
 
-    checkIfPlayersLastMove(player: Player): boolean {
-        return player.movesLeft == 0;
+    gameEnd(serverName: number, playerName: string): boolean {
+        let game = this.game.get(serverName);
+
+        return game!.state == GameState.finished;
     }
 
     calculateSetPointsField(dices: Dice[]): PointsField {
@@ -281,6 +342,7 @@ export class DicepokerStore {
             poker: 0,
             grande: 0,
             doubleGrande: 0,
+            sum: 0,
         };
 
         let diceCounts: number[] = [0, 0, 0, 0, 0, 0];
@@ -349,22 +411,13 @@ export class DicepokerStore {
     }
 
 
+
     //custom check functions
 
     dices: Dice[] = [Dice.one, Dice.two, Dice.three, Dice.four, Dice.five, Dice.six];
 
     getRandomDice(): Dice {
         return this.dices[Math.floor(Math.random() * 6)];
-    }
-
-    getNRandomDices(n: number): Dice[] {
-        let dices: Dice[] = [];
-
-        for (let i = 0; i < n; i++) {
-            dices.push(this.getRandomDice());
-        }
-
-        return dices;
     }
 
     getGameState(serverName: number): GameState {
@@ -384,18 +437,25 @@ export class DicepokerStore {
     checkIfPlayerIsOnTurn(serverName: number, playerName: string): boolean {
         if (!this.game.has(serverName)) return false;
 
-        if (this.game.get(serverName)!.player1.playerName == playerName && this.game.get(serverName)!.player1.isOnMove) {
-            return true;
-        } else {
-            return (this.game.get(serverName)!.player2.playerName == playerName && this.game.get(serverName)!.player2.isOnMove);
-        }
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+
+        return player.isOnMove;
     }
 
-    checkIfPlayersTurnIsOver(serverName: number, playerName: string): boolean {
+    checkIfPlayersLastMove(serverName: number, playerName: string): boolean {
         if (!this.game.has(serverName)) return false;
 
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
 
         return player.movesLeft == 0;
+    }
+
+    getPlayers(serverName: number, playerName: string): Player[] {
+        if (!this.game.has(serverName)) return [];
+
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
+
+        return [player, opponent];
     }
 }

@@ -46,7 +46,8 @@ export type PointsField = {
     street: number,
     poker: number,
     grande: number,
-    doubleGrande: number
+    doubleGrande: number,
+    sum: number,
 }
 
 export enum ReturnEnum {
@@ -59,7 +60,10 @@ export enum ReturnEnum {
     throwSuccessEnd,
     setSuccess,
     turnIsNotOver,
-    turnIsOver
+    turnIsOver,
+    fieldAlreadySetErr,
+    gameRunning,
+    gameEnd
 }
 
 export type StandardGameData = {
@@ -72,15 +76,18 @@ export type ChangeDiceObject = {
     change: boolean
 }
 
-export type PlayerSockets = {
+export type PlayerSocketsAndNames = {
     player1ws: Socket,
     player2ws: Socket,
+    player1Name: string,
+    player2Name: string
 }
 
 export type Throw = {
     returnEnum: ReturnEnum,
     dices: Dice[],
-    end: boolean
+    end: boolean,
+    playerName: string,
 }
 
 export type ThrowData = {
@@ -90,7 +97,7 @@ export type ThrowData = {
 
 export type JoinReturn = {
     returnEnum: ReturnEnum,
-    response: PlayerSockets | null
+    response: PlayerSocketsAndNames | null
 }
 
 export type SetPointsReturn = {

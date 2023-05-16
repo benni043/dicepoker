@@ -48,6 +48,8 @@ export class FieldComponent {
   @Input() readonlyV: boolean = true;
   @Input() playersField: boolean = false;
 
+  @Input() bools: boolean[] = [];
+
   list: string[] = ["ones", "twos", "threes", "fours", "fives", "sixes", "fullHouse", "street", "poker", "grande", "doubleGrande"];
 
   getRowElements(index: number): number[] {

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {connect, Socket} from "socket.io-client";
-import {ChangeDiceObject, Dice, PointsField, ReturnEnum, StandardGameData} from "../../../backend/src/game";
+import {ChangeDiceObject, Dice, Player, PointsField, StandardGameData} from "../../../backend/src/game";
 
 
 @Injectable({
@@ -11,8 +11,15 @@ export class RouterService {
   constructor() {
     this.socket = connect("http://localhost:3000/");
 
-    this.socket.on("joinSuccess", () => {
-      console.log("joinSucc")
+    this.socket.on("joinSuccess", (players: { p1: string, p2: string, sumField: any}) => {
+      console.log("joinSucc");
+
+      this.opponent = players.p1 == this.playerName ? players.p2 : players.p1;
+
+      if (this.opponent != "") {
+        this.sumField = new Map(JSON.parse(players.sumField))
+      }
+
       this.joined = true;
     })
 
@@ -40,6 +47,10 @@ export class RouterService {
       console.log("Du hast bereits 3 mal gewürfelt!")
     })
 
+    this.socket.on("fieldAlreadySetErr", () => {
+      console.log("Dieses Feld ist bereits belegt!");
+    })
+
     this.socket.on("throwSuccess", (res: Dice[]) => {
       this.dices = res;
     })
@@ -55,6 +66,17 @@ export class RouterService {
 
     this.socket.on("setPlayersField", (playersField) => {
       let map: Map<string, PointsField> = new Map(JSON.parse(playersField));
+      let name = map.entries().next().value[0];
+
+      this.bools = [];
+
+      for (const [key, value] of Object.entries(this.sumField?.get(name)!)) {
+        if (value == -1) {
+          this.bools.push(true);
+        } else {
+          this.bools.push(false);
+        }
+      }
 
       this.sumField = null;
       this.playersField = null;
@@ -67,9 +89,19 @@ export class RouterService {
       this.socket.emit("getSumField", ({playerName: this.playerName, serverName: this.serverName} as StandardGameData))
     })
 
-    this.socket.on("end", (res: ReturnEnum) => {
+    this.socket.on("end", () => {
       this.end = true;
-      console.log(res.toString())
+      this.activePlayer = "";
+
+      //machen
+
+      let p1Sum = this.sumField?.get(this.playerName)!.sum!;
+      let p2Sum = this.sumField?.get(this.opponent)!.sum!;
+
+      console.log(p1Sum)
+      console.log(p2Sum)
+
+      this.winner = p1Sum > p2Sum ? this.playerName : this.opponent;
     })
 
     this.socket.on("setSumField", (sumField) => {
@@ -90,12 +122,6 @@ export class RouterService {
       this.holdDices = [];
       this.activePlayer = activePlayer;
       this.throwEnd = false;
-
-      this.socket.emit("end", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
-    })
-
-    this.socket.on("fieldAlreadySetErr", () => {
-      console.log("Dieses Feld ist bereits belegt!");
     })
   }
 
@@ -108,9 +134,13 @@ export class RouterService {
   socket!: Socket;
 
   activePlayer: string = "";
+  opponent: string = "";
+  winner: string = "";
 
   playerName: string = "";
   serverName: number = 0;
+
+  bools: boolean[] = [];
 
   sumField!: Map<string, PointsField> | null;
   playersField!: Map<string, PointsField> | null;
@@ -119,9 +149,7 @@ export class RouterService {
   holdDices: Dice[] = [];
 
   joined: boolean = false;
-
   throwEnd: boolean = false;
-
   end: boolean = false;
 
   join(playerName: string, serverName: number) {

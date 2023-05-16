@@ -21,13 +21,21 @@ export class DicepokerRouter {
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
                 let res = this.dicepokerService.join(standardGameData, ws);
+                let players = this.dicepokerService.getPlayers(standardGameData.serverName, standardGameData.playerName);
+                let sumField = this.dicepokerService.getSumF(standardGameData.serverName, standardGameData.playerName);
+                let p1Name = players[0].playerName;
+                let p2Name = players[1].playerName;
 
                 if (res == ReturnEnum.illegalPlayerErr) {
                     ws.emit("illegalPlayerErr");
                 } else if (res == ReturnEnum.gameFullErr) {
                     ws.emit("gameFullErr")
                 } else {
-                    ws.emit("joinSuccess")
+                    for (let player of players) {
+                        if (player.socket != undefined) {
+                            player.socket?.emit("joinSuccess", {p1: p1Name, p2: p2Name, sumField: JSON.stringify(Array.from(sumField.entries()))})
+                        }
+                    }
                 }
             });
 
@@ -106,19 +114,27 @@ export class DicepokerRouter {
                     ws.emit("fieldAlreadySetErr")
                 } else if (res == ReturnEnum.setSuccess) {
                     ws.emit("setSuccess");
-                } else if (res == ReturnEnum.player1Won) {
+                } else {
                     ws.emit("setSuccess");
+
                     for (let player of players) {
-                        player.socket!.emit("end", (ReturnEnum.player1Won));
-                    }
-                } else if (res == ReturnEnum.player2Won) {
-                    ws.emit("setSuccess");
-                    for (let player of players) {
-                        player.socket!.emit("end", (ReturnEnum.player2Won));
+                        player.socket?.emit("end")
                     }
                 }
 
-                //tobi fragen warum nicht setSucess dann end aufgerufen wird??!??
+
+
+                // else if (res == ReturnEnum.player1Won) {
+                //     ws.emit("setSuccess");
+                //     for (let player of players) {
+                //         player.socket!.emit("end", (ReturnEnum.player1Won));
+                //     }
+                // } else if (res == ReturnEnum.player2Won) {
+                //     ws.emit("setSuccess");
+                //     for (let player of players) {
+                //         player.socket!.emit("end", (ReturnEnum.player2Won));
+                //     }
+                // }
             })
 
             ws.on("turnChange", (standardGameData: StandardGameData) => {

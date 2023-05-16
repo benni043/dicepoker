@@ -14,11 +14,13 @@
       <div *ngFor="let ele of getRowElements(i); index as j">
         <button *ngIf="ele != -1 && readonlyV" (click)="click(i)" class="valElem value borderBottom2"
                 [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV">{{ele}}</button>
-        <button *ngIf="ele != -1 && !readonlyV" (click)="click(i)" class="valElem value borderBottom2"
-                [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV">{{ele}}</button>
 
         <button *ngIf="ele == -1 && readonlyV" (click)="click(i)" class="valElem value borderBottom2"
                 [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV"></button>
+
+
+        <button *ngIf="!readonlyV" (click)="click(i)" class="valElem value borderBottom2"
+                [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV" [disabled]="!bools[i]">{{ele}}</button>
       </div>
     </div>
   </div>

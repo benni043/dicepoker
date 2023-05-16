@@ -4,8 +4,10 @@
   <app-dice-display [holdDices]="routerService.holdDices" [dices]="routerService.dices"></app-dice-display>
 
   <app-field [readonlyV]="true" [playersField]="false" [map]="routerService.sumField" *ngIf="routerService.sumField != undefined"></app-field>
-  <app-field [readonlyV]="false" [playersField]="true" [map]="routerService.playersField" *ngIf="routerService.playersField != undefined"></app-field>
+  <app-field [readonlyV]="false" [playersField]="true" [bools]="routerService.bools" [map]="routerService.playersField" *ngIf="routerService.playersField != undefined"></app-field>
 
   <h2>Ich: {{routerService.playerName}}</h2>
+  <h2>Gegner: {{routerService.opponent}}</h2>
   <h1>Aktueller Spieler: {{routerService.activePlayer}}</h1>
+  <h1>Gewinner: {{routerService.winner}}</h1>
 </div>

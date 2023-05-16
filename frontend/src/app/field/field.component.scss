@@ -39,8 +39,12 @@ button {
   border: 0;
 }
 
-.buttonWrite:hover {
+.buttonWrite:not(:disabled):hover {
   background-color: aquamarine;
+}
+
+.buttonWrite:disabled {
+  background-color: lightgray;
 }
 
 #main {

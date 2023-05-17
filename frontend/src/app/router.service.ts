@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {connect, Socket} from "socket.io-client";
-import {ChangeDiceObject, Dice, Player, PointsField, StandardGameData} from "../../../backend/src/game";
+import {ChangeDiceObject, Dice, PointsField, StandardGameData} from "../../../backend/src/game";
 
 
 @Injectable({
@@ -10,18 +10,6 @@ export class RouterService {
 
   constructor() {
     this.socket = connect("http://localhost:3000/");
-
-    this.socket.on("joinSuccess", (players: { p1: string, p2: string, sumField: any}) => {
-      console.log("joinSucc");
-
-      this.opponent = players.p1 == this.playerName ? players.p2 : players.p1;
-
-      if (this.opponent != "") {
-        this.sumField = new Map(JSON.parse(players.sumField))
-      }
-
-      this.joined = true;
-    })
 
     this.socket.on("gameFullErr", () => {
       console.log("gameIsFull");
@@ -49,6 +37,24 @@ export class RouterService {
 
     this.socket.on("fieldAlreadySetErr", () => {
       console.log("Dieses Feld ist bereits belegt!");
+    })
+
+    this.socket.on("joinSuccess", (sumField: { sumField: any}) => {
+      console.log("joinSucc");
+
+      this.sumField = new Map(JSON.parse(sumField.sumField))
+
+      this.joined = true;
+
+      this.socket.emit("turnChange", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
+    })
+
+    this.socket.on("rejoin", () => {
+      console.log("rejoin");
+
+      this.joined = true;
+
+
     })
 
     this.socket.on("throwSuccess", (res: Dice[]) => {
@@ -89,19 +95,21 @@ export class RouterService {
       this.socket.emit("getSumField", ({playerName: this.playerName, serverName: this.serverName} as StandardGameData))
     })
 
-    this.socket.on("end", () => {
+    this.socket.on("end", (playersAndSums: {playerName: string, points: number}[]) => {
       this.end = true;
       this.activePlayer = "";
 
-      //machen
+      let biggestSum: number = playersAndSums[0].points;
+      let winner = playersAndSums[0].playerName;
 
-      let p1Sum = this.sumField?.get(this.playerName)!.sum!;
-      let p2Sum = this.sumField?.get(this.opponent)!.sum!;
+      for (let playersAndSum of playersAndSums) {
+        if (playersAndSum.points > biggestSum) {
+          biggestSum = playersAndSum.points;
+          winner = playersAndSum.playerName;
+        }
+      }
 
-      console.log(p1Sum)
-      console.log(p2Sum)
-
-      this.winner = p1Sum > p2Sum ? this.playerName : this.opponent;
+      this.winner = winner;
     })
 
     this.socket.on("setSumField", (sumField) => {
@@ -113,15 +121,20 @@ export class RouterService {
 
       setTimeout(() => {
         this.sumField = map;
-        this.socket.emit("turnChange", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
+
+        if (!this.end) {
+          this.socket.emit("turnChange", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
+        }
       }, 10)
     })
 
     this.socket.on("playerTurnInformation", (activePlayer) => {
+      this.activePlayer = activePlayer;
+
       this.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
       this.holdDices = [];
-      this.activePlayer = activePlayer;
       this.throwEnd = false;
+      this.firstMove = true;
     })
   }
 
@@ -133,8 +146,9 @@ export class RouterService {
 
   socket!: Socket;
 
+  rejoin: boolean = false;
+
   activePlayer: string = "";
-  opponent: string = "";
   winner: string = "";
 
   playerName: string = "";
@@ -157,7 +171,6 @@ export class RouterService {
     this.serverName = serverName;
 
     this.socket.emit("joinToGame", {serverName: serverName, playerName: playerName});
-    this.socket.emit("turnChange", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
   }
 
   sendValue(elem: string) {
@@ -167,11 +180,22 @@ export class RouterService {
     })
   }
 
+  firstMove: boolean = true;
+
   throw(receiveDices: ChangeDiceObject[]) {
+    let dices : ChangeDiceObject[] = [];
+    dices.push({dice: Dice.one, change: true});
+    dices.push({dice: Dice.one, change: true});
+    dices.push({dice: Dice.one, change: true});
+    dices.push({dice: Dice.one, change: true});
+    dices.push({dice: Dice.one, change: true});
+
     this.socket.emit("throw", ({
-      receiveDices: receiveDices,
-      standardGameData: {serverName: this.serverName, playerName: this.playerName}
+      receiveDices: this.firstMove ? dices : receiveDices,
+      standardGameData: {serverName: this.serverName, playerName: this.playerName},
     }))
+
+    this.firstMove = false;
   }
 
 }

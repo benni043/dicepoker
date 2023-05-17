@@ -70,7 +70,8 @@ export enum ReturnEnum {
     gameEnd,
     player1Won,
     player2Won,
-    moves0
+    moves0,
+    rejoin
 }
 
 export type StandardGameData = {

@@ -1,6 +1,7 @@
 import {DicepokerStore} from "./dicepoker.store";
 import {
     ChangeDiceObject,
+    Dice,
     GameNotExists,
     GameState,
     Player,
@@ -17,7 +18,13 @@ export class DicepokerService {
 
     join(standardGameData: StandardGameData, ws: Socket): ReturnEnum {
         if (this.getGameState(standardGameData.serverName) == GameState.running) {
-            return ReturnEnum.gameFullErr
+            let player = this.getPlayer(standardGameData.serverName, standardGameData.playerName)!;
+            if (!player.isOnline && player.playerName == standardGameData.playerName) {
+                this.dicerpokerStore.rejoin(standardGameData.serverName, standardGameData.playerName, ws);
+                return ReturnEnum.rejoin
+            } else {
+                return ReturnEnum.gameFullErr
+            }
         }
 
         if (this.checkIfPlayerExists(standardGameData.serverName, standardGameData.playerName)) {
@@ -26,6 +33,10 @@ export class DicepokerService {
 
         this.dicerpokerStore.join(standardGameData, ws);
         return ReturnEnum.joinSuccess
+    }
+
+    getRejoinData(standardGameData: StandardGameData) {
+
     }
 
     getNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Throw {
@@ -45,7 +56,20 @@ export class DicepokerService {
             return {returnEnum: ReturnEnum.moves0, dices: []}
         }
 
-        let res = this.dicerpokerStore.getNewDices(receiveDices, playerName, serverName);
+        let res;
+
+        if (this.getPlayerMoves(serverName, playerName) == 3) {
+            let dices: ChangeDiceObject[] = [];
+            dices.push({dice: Dice.one, change: true});
+            dices.push({dice: Dice.one, change: true});
+            dices.push({dice: Dice.one, change: true});
+            dices.push({dice: Dice.one, change: true});
+            dices.push({dice: Dice.one, change: true});
+
+            res = this.dicerpokerStore.getNewDices(dices, playerName, serverName);
+        } else {
+            res = this.dicerpokerStore.getNewDices(receiveDices, playerName, serverName);
+        }
 
         if (this.getPlayerMoves(serverName, playerName) == 0) {
             return {returnEnum: ReturnEnum.moves0, dices: res}
@@ -133,6 +157,14 @@ export class DicepokerService {
         }
 
         return this.dicerpokerStore.turnChange(playerName, serverName);
+    }
+
+    disconnect(playerName: string, serverName: number) {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.running) {
+            this.dicerpokerStore.disconnect(playerName, serverName);
+        } else {
+            return ReturnEnum.gameNotStartedErr
+        }
     }
 
 
@@ -282,6 +314,16 @@ export class DicepokerService {
             map.set(opponent.playerName, opponent.pointsField);
 
             return map;
+        }
+    }
+
+    getPlayer(serverName: number, playerName: string) {
+        let game = this.dicerpokerStore.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return null
+        else {
+            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
+            return player;
         }
     }
 

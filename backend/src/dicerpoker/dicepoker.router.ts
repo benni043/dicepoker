@@ -18,26 +18,35 @@ export class DicepokerRouter {
         this.app.use(cors());
 
         this.socketIO.on("connection", (ws) => {
+            let playerName: string
+            let serverName: number
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
                 let res = this.dicepokerService.join(standardGameData, ws);
                 let players = this.dicepokerService.getPlayers(standardGameData.serverName, standardGameData.playerName);
                 let sumField = this.dicepokerService.getSumF(standardGameData.serverName, standardGameData.playerName);
-                let p1Name = players[0].playerName;
-                let p2Name = players[1].playerName;
 
                 if (res == ReturnEnum.illegalPlayerErr) {
                     ws.emit("illegalPlayerErr");
                 } else if (res == ReturnEnum.gameFullErr) {
                     ws.emit("gameFullErr")
+                } else if (res == ReturnEnum.rejoin) {
+                    ws.emit("rejoin")
                 } else {
+                    playerName = standardGameData.playerName
+                    serverName = standardGameData.serverName;
+
                     for (let player of players) {
                         if (player.socket != undefined) {
-                            player.socket?.emit("joinSuccess", {p1: p1Name, p2: p2Name, sumField: JSON.stringify(Array.from(sumField.entries()))})
+                            player.socket?.emit("joinSuccess", {sumField: JSON.stringify(Array.from(sumField.entries()))})
                         }
                     }
                 }
             });
+
+            ws.on("getRejoinData", (standardGameData: StandardGameData) => {
+
+            })
 
             ws.on("throw", (throwData: ThrowData) => {
                 let res: Throw = this.dicepokerService.getNewDices(throwData.receiveDices, throwData.standardGameData.playerName, throwData.standardGameData.serverName);
@@ -117,24 +126,15 @@ export class DicepokerRouter {
                 } else {
                     ws.emit("setSuccess");
 
+                    let playersAndSums: {playerName: string, points: number}[] = [];
                     for (let player of players) {
-                        player.socket?.emit("end")
+                        playersAndSums.push({playerName: player.playerName, points: player.points})
+                    }
+
+                    for (let player of players) {
+                        player.socket?.emit("end", (playersAndSums))
                     }
                 }
-
-
-
-                // else if (res == ReturnEnum.player1Won) {
-                //     ws.emit("setSuccess");
-                //     for (let player of players) {
-                //         player.socket!.emit("end", (ReturnEnum.player1Won));
-                //     }
-                // } else if (res == ReturnEnum.player2Won) {
-                //     ws.emit("setSuccess");
-                //     for (let player of players) {
-                //         player.socket!.emit("end", (ReturnEnum.player2Won));
-                //     }
-                // }
             })
 
             ws.on("turnChange", (standardGameData: StandardGameData) => {
@@ -148,6 +148,10 @@ export class DicepokerRouter {
                         player.socket?.emit("playerTurnInformation", (res))
                     }
                 }
+            })
+
+            ws.on("disconnect", () => {
+                this.dicepokerService.disconnect(playerName, serverName);
             })
 
         });

@@ -17,7 +17,7 @@ export class DiceDisplayComponent {
   @Input() holdDices!: Dice[];
 
   canMove() {
-    return this.routerService.activePlayer == this.routerService.playerName && !this.routerService.throwEnd && !this.routerService.end;
+    return this.routerService.activePlayer == this.routerService.playerName && !this.routerService.throwEnd && !this.routerService.end && !this.routerService.firstMove;
   }
 
   hold(index: number) {

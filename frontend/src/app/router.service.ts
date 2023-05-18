@@ -1,8 +1,7 @@
 import {Injectable} from '@angular/core';
 import {connect, Socket} from "socket.io-client";
 import {ChangeDiceObject, Dice, PointsField, RejoinData, RejoinType, StandardGameData} from "../../../backend/src/game";
-import {environment} from "../environment/environment";
-
+import {environment} from "../environment/environment.prod";
 
 @Injectable({
   providedIn: 'root'

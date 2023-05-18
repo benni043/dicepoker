@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {connect, Socket} from "socket.io-client";
 import {ChangeDiceObject, Dice, PointsField, RejoinData, RejoinType, StandardGameData} from "../../../backend/src/game";
+import {environment} from "../environment/environment";
 
 
 @Injectable({
@@ -19,7 +20,7 @@ export class RouterService {
   }
 
   constructor() {
-    this.socket = connect("http://localhost:3000/");
+    this.socket = connect(environment.baseAddress);
 
     this.socket.on("gameFullErr", () => {
       console.log("Das Spiel ist voll!");

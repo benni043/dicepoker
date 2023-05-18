@@ -13,6 +13,7 @@ import {
     Throw,
     ThrowData
 } from "../game";
+import path from "path";
 
 export class DicepokerRouter {
 
@@ -25,6 +26,12 @@ export class DicepokerRouter {
 
     constructor() {
         this.app.use(cors());
+
+        this.app.use(express.static(path.join(__dirname, '../../../frontend/dist/frontend')));
+        this.app.get('/', (req, res) => {
+            res.sendFile(path.join(__dirname, '../../../frontend/dist/frontend/index.html'));
+            res.end()
+        });
 
         this.socketIO.on("connection", (ws) => {
             let playerName: string

@@ -1,12 +1,25 @@
-<app-join *ngIf="!routerService.joined"></app-join>
+<div id="backendErr" *ngIf="routerService.errorMSG != ''">
+  <app-alert [message]="routerService.errorMSG"></app-alert>
+</div>
+
+<div>
+  <app-join *ngIf="!routerService.joined"></app-join>
+</div>
 
 <div *ngIf="routerService.joined">
-  <app-dice-display [holdDices]="routerService.holdDices" [dices]="routerService.dices"></app-dice-display>
+  <div class="data">
+    <h1>Würfel-Poker</h1>
+    <h2 *ngIf="!routerService.end">Aktueller Spieler: {{routerService.activePlayer}}</h2>
+    <h2 *ngIf="!routerService.end">Spielzüge: {{routerService.movesLeft}}</h2>
+    <h2 *ngIf="routerService.end">Gewinner: {{routerService.winner}}</h2>
+  </div>
 
-  <app-field [readonlyV]="true" [playersField]="false" [map]="routerService.sumField" *ngIf="routerService.sumField != undefined"></app-field>
-  <app-field [readonlyV]="false" [playersField]="true" [bools]="routerService.bools" [map]="routerService.playersField" *ngIf="routerService.playersField != undefined"></app-field>
+  <div class="game">
+    <app-field [readonlyV]="true" [playersField]="false" [map]="routerService.sumField"
+               *ngIf="routerService.sumField != undefined"></app-field>
+    <app-field [readonlyV]="false" [playersField]="true" [bools]="routerService.bools" [map]="routerService.playersField"
+               *ngIf="routerService.playersField != undefined"></app-field>
 
-  <h2>Ich: {{routerService.playerName}}</h2>
-  <h1>Aktueller Spieler: {{routerService.activePlayer}}</h1>
-  <h1>Gewinner: {{routerService.winner}}</h1>
+    <app-dice-display [holdDices]="routerService.holdDices" [dices]="routerService.dices"></app-dice-display>
+  </div>
 </div>

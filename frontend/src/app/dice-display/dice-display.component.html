@@ -1,13 +1,15 @@
-<div id="dices">
-  <div *ngFor="let dice of dices; index as i">
+<div id="dices" class="field">
+  <div *ngFor="let dice of dices; index as i" >
     <app-dice (click)="hold(i)" [dice]="dice"></app-dice>
   </div>
 </div>
 
-<div id="holdDices">
+<div id="holdDices" class="field">
   <div *ngFor="let holdDice of holdDices; index as i">
     <app-dice (click)="dehold(i)" [dice]="holdDice"></app-dice>
   </div>
 </div>
 
-<button (click)="throw()" [disabled]="this.routerService.activePlayer != this.routerService.playerName || this.routerService.throwEnd || this.routerService.end">Würfeln</button>
+<div id="btn">
+  <button (click)="throw()" [disabled]="this.routerService.activePlayer != this.routerService.playerName || this.routerService.throwEnd || this.routerService.end">Würfeln</button>
+</div>

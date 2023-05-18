@@ -1,0 +1,34 @@
+.alert {
+  display: table;
+  background-color: #ffe6e6;
+  color: #ff6868;
+  padding: 10px;
+  border-radius: 4px;
+  position: relative;
+  margin: 20px;
+  width: 180px;
+  height: 80px;
+  font-size: 20px;
+}
+
+.text {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: center;
+}
+
+@keyframes fadeBackground {
+  0% {
+    background-color: #ffe6e6;
+    color: #ff6868;
+  }
+  100% {
+    background-color: transparent;
+    color: transparent;
+  }
+}
+
+.hide {
+  animation: fadeBackground 2s;
+  width: 180px;
+}

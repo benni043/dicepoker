@@ -10,6 +10,7 @@ import { CreateComponent } from './create/create.component';
 import { DiceComponent } from './dice/dice.component';
 import { DiceDisplayComponent } from './dice-display/dice-display.component';
 import {NgOptimizedImage} from "@angular/common";
+import { AlertComponent } from './alert/alert.component';
 
 @NgModule({
   declarations: [
@@ -18,7 +19,8 @@ import {NgOptimizedImage} from "@angular/common";
     JoinComponent,
     CreateComponent,
     DiceComponent,
-    DiceDisplayComponent
+    DiceDisplayComponent,
+    AlertComponent
   ],
     imports: [
         BrowserModule,

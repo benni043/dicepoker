@@ -1,4 +1,13 @@
-import {ChangeDiceObject, Dice, Game, GameNotExists, GameState, PointsField, StandardGameData} from "../game";
+import {
+    ChangeDiceObject,
+    Dice,
+    Game,
+    ReturnEnum,
+    GameState,
+    PointsField,
+    StandardGameData,
+    GameNotExists
+} from "../game";
 import {Socket} from "socket.io";
 
 export class DicepokerStore {
@@ -101,20 +110,9 @@ export class DicepokerStore {
         let player = game.player1.playerName == playerName ? game.player1 : game.player2;
 
         player.isOnline = true;
+        game.numberOfPlayersWhoLeft--;
         player.socket = ws;
-    }
 
-    getRejoinData(serverName: number, playerName: string) {
-        let game = this.game.get(serverName)!;
-        let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-
-        if (player.isOnMove && player.movesLeft > 0) {
-            return player.dices;
-        } else if (player.isOnMove && player.movesLeft == 0) {
-            return this.getPlayersField(playerName, serverName);
-        } else if (!player.isOnMove) {
-            return this.getSumField(playerName, serverName)
-        }
     }
 
     getNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Dice[] {

@@ -50,10 +50,6 @@ export type PointsField = {
     sum: number,
 }
 
-export enum GameNotExists {
-    gameNotExistsError
-}
-
 export enum ReturnEnum {
     gameFullErr,
     joinSuccess,
@@ -71,8 +67,28 @@ export enum ReturnEnum {
     player1Won,
     player2Won,
     moves0,
-    rejoin
+    rejoin,
 }
+
+export enum GameNotExists {
+    gameNotExistsError
+}
+
+export type RejoinData = {
+    type: RejoinType,
+    dices: Dice[],
+    playerField: string | null,
+    sumField: string,
+    actPlayer: string,
+    moves: number
+}
+
+export enum RejoinType {
+    dice,
+    playerField,
+    sumField
+}
+
 
 export type StandardGameData = {
     serverName: number,

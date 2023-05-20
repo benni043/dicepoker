@@ -4,13 +4,15 @@ import * as http from "http";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
-    GameNotExists,
+    End,
+    GameNotExists, GetError,
+    NewDices,
     Player,
-    PointsField, RejoinData,
-    ReturnEnum,
-    SetPointData,
+    PointsField,
+    RejoinData,
+    ReturnEnum, SetError,
+    SetPointData, SetSuccess,
     StandardGameData,
-    Throw,
     ThrowData
 } from "../game";
 import path from "path";
@@ -39,7 +41,7 @@ export class DicepokerRouter {
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
                 let res = this.dicepokerService.routerJoin(standardGameData, ws);
-                let players = this.dicepokerService.getPlayers(standardGameData.serverName, standardGameData.playerName);
+                let players = this.dicepokerService.getPlayers(standardGameData.serverName);
                 let sumField = this.dicepokerService.getSumF(standardGameData.serverName, standardGameData.playerName);
 
                 if (res == GameNotExists.gameNotExistsError) {
@@ -57,7 +59,7 @@ export class DicepokerRouter {
                             player.socket?.emit("joinSuccess", {sumField: JSON.stringify(Array.from(sumField.entries()))})
                         }
                     }
-                } else if (typeof res === "object"){
+                } else if (typeof res === "object") {
                     playerName = standardGameData.playerName
                     serverName = standardGameData.serverName;
 
@@ -67,117 +69,104 @@ export class DicepokerRouter {
                 }
             });
 
-            ws.on("throw", (throwData: ThrowData) => {
-                let res: Throw = this.dicepokerService.routerGetNewDices(throwData.receiveDices, throwData.standardGameData.playerName, throwData.standardGameData.serverName);
+            ws.on("switched", (data: { newDices: NewDices, standardGameData: StandardGameData }) => {
+                let players: Player[] = this.dicepokerService.getPlayers(data.standardGameData.serverName);
 
-                let players: Player[] = this.dicepokerService.getPlayers(throwData.standardGameData.serverName, throwData.standardGameData.playerName);
+                for (let player of players) {
+                    player.socket?.emit("switched", (data.newDices))
+                }
+            }) //finish
 
-                if (res.returnEnum == ReturnEnum.gameNotStartedErr) {
-                    ws.emit("gameNotStartedErr");
-                } else if (res.returnEnum == ReturnEnum.illegalPlayerErr) {
-                    ws.emit("illegalPlayerErr");
-                } else if (res.returnEnum == ReturnEnum.playerNotOnTurnErr) {
-                    ws.emit("playerNotOnTurnErr")
-                } else if (res.returnEnum == ReturnEnum.turnIsOver) {
-                    ws.emit("turnIsOver");
-                } else if (res.returnEnum == ReturnEnum.moves0) {
+            ws.on("getNewDices", (throwData: ThrowData) => {
+                let res = this.dicepokerService.routerGetNewDices(throwData.receiveDices, throwData.standardGameData.playerName, throwData.standardGameData.serverName);
+                let players: Player[] = this.dicepokerService.getPlayers(throwData.standardGameData.serverName);
+
+                if (res == GetError.gameNotExists) {
+                    ws.emit("gameNotExists");
+                } else if (res == GetError.unknownPlayer) {
+                    ws.emit("unknownPlayer");
+                } else {
                     for (let player of players) {
-                        player.socket!.emit("throwSuccess", res.dices);
-                    }
-                    ws.emit("moves0");
-                } else if (res.returnEnum == ReturnEnum.throwSuccess) {
-                    for (let player of players) {
-                        player.socket!.emit("throwSuccess", res.dices);
+                        player.socket?.emit("setNewDices", res)
                     }
                 }
-            });
+            }); //finish
 
             ws.on("getPlayersField", (standardGameData: StandardGameData) => {
-                let res: Map<string, PointsField> | ReturnEnum = this.dicepokerService.routerGetPlayersField(standardGameData.playerName, standardGameData.serverName);
+                let res: Map<string, PointsField> | GetError = this.dicepokerService.routerGetPlayersField(standardGameData.playerName, standardGameData.serverName);
 
-                if (res == ReturnEnum.gameNotStartedErr) {
-                    ws.emit("gameNotStartedErr");
-                } else if (res == ReturnEnum.illegalPlayerErr) {
-                    ws.emit("illegalPlayerErr");
-                } else if (res == ReturnEnum.playerNotOnTurnErr) {
-                    ws.emit("playerNotOnTurnErr")
-                } else if (res == ReturnEnum.turnIsNotOver) {
-                    ws.emit("turnIsNotOver");
-                } else if ((res instanceof Map<string, PointsField>)) {
+                if (res == GetError.gameNotExists) {
+                    ws.emit("gameNotExists");
+                } else if (res == GetError.unknownPlayer) {
+                    ws.emit("unknownPlayer");
+                } else {
                     ws.emit("setPlayersField", JSON.stringify(Array.from(res.entries())));
                 }
-            });
+            }); //finish
 
             ws.on("getSumField", (standardGameData: StandardGameData) => {
-                let res: Map<string, PointsField> | ReturnEnum = this.dicepokerService.routerGetSumField(standardGameData.playerName, standardGameData.serverName);
-                let players: Player[] = this.dicepokerService.getPlayers(standardGameData.serverName, standardGameData.playerName);
+                let res: Map<string, PointsField> | GetError = this.dicepokerService.routerGetSumField(standardGameData.playerName, standardGameData.serverName);
+                let players: Player[] = this.dicepokerService.getPlayers(standardGameData.serverName);
 
-                if (res == ReturnEnum.gameNotStartedErr) {
-                    ws.emit("gameNotStartedErr");
-                } else if (res == ReturnEnum.illegalPlayerErr) {
-                    ws.emit("illegalPlayerErr");
-                } else if (res == ReturnEnum.playerNotOnTurnErr) {
-                    ws.emit("playerNotOnTurnErr")
-                } else if (res == ReturnEnum.turnIsNotOver) {
-                    ws.emit("turnIsNotOver");
-                } else if ((res instanceof Map<string, PointsField>)) {
+                if (res == GetError.gameNotExists) {
+                    ws.emit("gameNotExists");
+                } else if (res == GetError.unknownPlayer) {
+                    ws.emit("unknownPlayer");
+                } else {
                     for (let player of players) {
                         player.socket!.emit("setSumField", JSON.stringify(Array.from(res.entries())));
                     }
                 }
-            })
+            }) //finish
 
             ws.on("setField", (setPointData: SetPointData) => {
-                let res: ReturnEnum = this.dicepokerService.routerSetValueToPlayersField(setPointData.standardGameData.playerName, setPointData.standardGameData.serverName, setPointData.field);
-                let players: Player[] = this.dicepokerService.getPlayers(setPointData.standardGameData.serverName, setPointData.standardGameData.playerName);
+                let res: SetError | SetSuccess = this.dicepokerService.routerSetField(setPointData.standardGameData.playerName, setPointData.standardGameData.serverName, setPointData.field);
+                let players: Player[] = this.dicepokerService.getPlayers(setPointData.standardGameData.serverName);
 
-                if (res == ReturnEnum.gameNotStartedErr) {
-                    ws.emit("gameNotStartedErr");
-                } else if (res == ReturnEnum.illegalPlayerErr) {
-                    ws.emit("illegalPlayerErr");
-                } else if (res == ReturnEnum.playerNotOnTurnErr) {
-                    ws.emit("playerNotOnTurnErr")
-                } else if (res == ReturnEnum.turnIsNotOver) {
-                    ws.emit("turnIsNotOver");
-                } else if (res == ReturnEnum.fieldAlreadySetErr) {
-                    ws.emit("fieldAlreadySetErr")
-                } else if (res == ReturnEnum.setSuccess) {
-                    ws.emit("setSuccess");
+                if (res == SetError.gameNotStarted) {
+                    ws.emit("gameNotStarted");
+                } else if (res == SetError.gameNotExists) {
+                    ws.emit("gameNotExists");
+                } else if (res == SetError.unknownPlayer) {
+                    ws.emit("unknownPlayer")
+                } else if (res == SetError.wrongPlayer) {
+                    ws.emit("wrongPlayer");
+                } else if (res == SetError.fieldFull) {
+                    ws.emit("fieldFull")
+                } else if (res == SetSuccess.update) {
+                    ws.emit("update", {end: false, playersAndSums: []} as End);
                 } else {
-                    ws.emit("setSuccess");
-
-                    let playersAndSums: {playerName: string, points: number}[] = [];
-                    for (let player of players) {
-                        playersAndSums.push({playerName: player.playerName, points: player.points})
-                    }
+                    let playersAndSums = this.dicepokerService.getPlayersAndSums(serverName);
 
                     for (let player of players) {
-                        player.socket?.emit("end", (playersAndSums))
+                        ws.emit("update", {end: true, playersAndSums: playersAndSums} as End);
                     }
                 }
-            })
+            }) //finish
 
-            ws.on("turnChange", (standardGameData: StandardGameData) => {
-                let res: string | ReturnEnum = this.dicepokerService.routerTurnChange(standardGameData.playerName, standardGameData.serverName);
-                let players: Player[] = this.dicepokerService.getPlayers(standardGameData.serverName, standardGameData.playerName);
+            ws.on("getActivePlayer", (standardGameData: StandardGameData) => {
+                let res: string | GetError = this.dicepokerService.routerGetActivePlayer(standardGameData.playerName, standardGameData.serverName);
+                let players: Player[] = this.dicepokerService.getPlayers(standardGameData.serverName);
 
-                if (res == ReturnEnum.gameNotStartedErr) {
-                    ws.emit("gameNotStartedErr");
+                if (res == GetError.gameNotExists) {
+                    ws.emit("gameNotExists");
+                } else if (res == GetError.unknownPlayer) {
+                    ws.emit("unknownPlayer");
                 } else {
                     for (let player of players) {
-                        player.socket?.emit("playerTurnInformation", (res))
+                        player.socket?.emit("setActivePlayer", res);
                     }
                 }
-            })
+            }) //finish
 
             ws.on("disconnect", () => {
                 this.dicepokerService.routerDisconnect(playerName, serverName);
-            })
+            }) //finish
 
         });
 
         this.server.listen(this.port, () => {
             console.log(`started dicepoker on port ${this.port}`)
-        })
+        }) //finish
     }
 }

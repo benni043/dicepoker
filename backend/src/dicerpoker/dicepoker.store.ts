@@ -1,13 +1,4 @@
-import {
-    ChangeDiceObject,
-    Dice,
-    Game,
-    ReturnEnum,
-    GameState,
-    PointsField,
-    StandardGameData,
-    GameNotExists
-} from "../game";
+import {ChangeDiceObject, Dice, Game, GameNotExists, GameState, PointsField, StandardGameData, ThrowRes} from "../game";
 import {Socket} from "socket.io";
 
 export class DicepokerStore {
@@ -103,7 +94,7 @@ export class DicepokerStore {
             this.game.get(standardGameData.serverName)!.player2.isOnline = true;
             this.game.get(standardGameData.serverName)!.player2.socket = ws;
         }
-    }
+    } //finish
 
     rejoin(serverName: number, playerName: string, ws: Socket) {
         let game = this.game.get(serverName)!;
@@ -112,28 +103,33 @@ export class DicepokerStore {
         player.isOnline = true;
         game.numberOfPlayersWhoLeft--;
         player.socket = ws;
+    } //finish
 
-    }
+    getNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): ThrowRes {
+        let newDices = []
+        let holdDices = []
 
-    getNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Dice[] {
-        let newDices: Dice[] = []
+        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
 
         for (let receiveDice of receiveDices) {
             if (receiveDice.change) {
                 newDices.push(this.getRandomDice());
             } else {
-                newDices.push(receiveDice.dice);
+                holdDices.push(receiveDice.dice);
             }
         }
 
-        this.setPlayerSettings(serverName, playerName, newDices);
+        this.setPlayerSettings(serverName, playerName, [...newDices, ...holdDices]);
 
-        return newDices;
-    }
+        return {newDices: {dices: newDices, holdDices: holdDices}, moves: player.movesLeft};
+    } //finish
 
-    setPointsToGameView(playerName: string, serverName: number, field: string): void {
+    setGameEnd(serverName: number) {
+        this.game.get(serverName)!.state = GameState.finished;
+    } //finish
+
+    setField(playerName: string, serverName: number, field: string): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName != playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
 
         switch (field) {
             case "ones": {
@@ -194,11 +190,7 @@ export class DicepokerStore {
         }
 
         player.pointsField.sum = player.points;
-
-        //mehr spieler
-        //mehr spalten
-        //rejoin
-    }
+    } //finish
 
     getPlayersField(playerName: string, serverName: number): Map<string, PointsField> {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
@@ -208,7 +200,7 @@ export class DicepokerStore {
         map.set(player.playerName, player.pointsFieldTMP);
 
         return map;
-    }
+    } //finish
 
     getSumField(playerName: string, serverName: number): Map<string, PointsField> {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
@@ -240,15 +232,7 @@ export class DicepokerStore {
         opponent.isOnMove = true;
 
         return map;
-    }
-
-    turnChange(playerName: string, serverName: number) {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
-
-        if (player.isOnMove) return player.playerName;
-        else return opponent.playerName;
-    }
+    } //finish
 
     private setPlayerSettings(serverName: number, playerName: string, newDices: Dice[]): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
@@ -257,7 +241,7 @@ export class DicepokerStore {
         player.movesLeft--;
 
         player.pointsFieldTMP = this.calculateSetPointsField(newDices);
-    }
+    } //finish
 
     private calculateSetPointsField(dices: Dice[]): PointsField {
         let setPoints: PointsField = {
@@ -338,7 +322,7 @@ export class DicepokerStore {
         }
 
         return setPoints;
-    }
+    } //finish
 
     disconnect(playerName: string, serverName: number) {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
@@ -347,31 +331,20 @@ export class DicepokerStore {
         game.numberOfPlayersWhoLeft++;
         player.isOnline = false;
 
-        if(game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
+        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
             this.game.delete(serverName);
         }
-    }
+    } //finish
 
-
-    //custom functions
 
     dices: Dice[] = [Dice.one, Dice.two, Dice.three, Dice.four, Dice.five, Dice.six];
 
     getRandomDice(): Dice {
         return this.dices[Math.floor(Math.random() * 6)];
-    }
+    } //finish
 
     getGame(serverName: number): Game | GameNotExists {
         return this.game.has(serverName) ? this.game.get(serverName)! : GameNotExists.gameNotExistsError;
-    }
+    } //finish
 
-    getPointsField(serverName: number, playerName: string): PointsField | GameNotExists {
-        if (!this.game.has(serverName)) return GameNotExists.gameNotExistsError;
-        else {
-            let game = this.game.get(serverName)!;
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-
-            return player.pointsField;
-        }
-    }
 }

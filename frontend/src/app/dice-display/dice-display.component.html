@@ -11,5 +11,5 @@
 </div>
 
 <div id="btn">
-  <button (click)="throw()" [disabled]="this.routerService.activePlayer != this.routerService.playerName || this.routerService.throwEnd || this.routerService.end">Würfeln</button>
+  <button class="btn" (click)="throw()" [disabled]="this.routerService.activePlayer != this.routerService.playerName || this.routerService.throwEnd || this.routerService.end">Würfeln</button>
 </div>

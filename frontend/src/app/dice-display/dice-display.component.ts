@@ -1,6 +1,6 @@
 import {Component, Input} from '@angular/core';
-import {ChangeDiceObject, Dice} from "../../../../backend/src/game";
 import {RouterService} from "../router.service";
+import {ChangeDiceObject, Dice} from "../game";
 
 @Component({
   selector: 'app-dice-display',
@@ -25,6 +25,8 @@ export class DiceDisplayComponent {
 
     this.holdDices.push(this.dices[index]);
     this.dices.splice(index, 1);
+
+    this.routerService.switched(this.dices, this.holdDices)
   }
 
   dehold(index: number) {
@@ -32,6 +34,8 @@ export class DiceDisplayComponent {
 
     this.dices.push(this.holdDices[index]);
     this.holdDices.splice(index, 1);
+
+    this.routerService.switched(this.dices, this.holdDices)
   }
 
   throw() {

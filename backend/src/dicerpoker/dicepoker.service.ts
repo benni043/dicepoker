@@ -4,13 +4,15 @@ import {
     Dice,
     GameNotExists,
     GameState,
-    Player,
+    GetError,
+    Player, PlayerAndSum,
     PointsField,
     RejoinData,
     RejoinType,
     ReturnEnum,
+    SetError, SetSuccess,
     StandardGameData,
-    Throw
+    ThrowRes
 } from "../game";
 import {Socket} from "socket.io";
 
@@ -38,137 +40,6 @@ export class DicepokerService {
         return ReturnEnum.joinSuccess
     }
 
-    routerGetNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): Throw {
-        if (this.getGameState(serverName) != GameState.running) {
-            return {returnEnum: ReturnEnum.gameNotStartedErr, dices: []}
-        }
-
-        if (!this.checkIfPlayerExists(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.illegalPlayerErr, dices: []}
-        }
-
-        if (!this.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.playerNotOnTurnErr, dices: []}
-        }
-
-        if (this.checkIfPlayersLastMove(serverName, playerName)) {
-            return {returnEnum: ReturnEnum.moves0, dices: []}
-        }
-
-        let res;
-
-        if (this.getPlayerMoves(serverName, playerName) == 3) {
-            let dices: ChangeDiceObject[] = [];
-            dices.push({dice: Dice.one, change: true});
-            dices.push({dice: Dice.one, change: true});
-            dices.push({dice: Dice.one, change: true});
-            dices.push({dice: Dice.one, change: true});
-            dices.push({dice: Dice.one, change: true});
-
-            res = this.dicerpokerStore.getNewDices(dices, playerName, serverName);
-        } else {
-            res = this.dicerpokerStore.getNewDices(receiveDices, playerName, serverName);
-        }
-
-        if (this.getPlayerMoves(serverName, playerName) == 0) {
-            return {returnEnum: ReturnEnum.moves0, dices: res}
-        }
-
-        return {returnEnum: ReturnEnum.throwSuccess, dices: res};
-    }
-
-    routerSetValueToPlayersField(playerName: string, serverName: number, field: string): ReturnEnum {
-        if (this.getGameState(serverName) != GameState.running) {
-            return ReturnEnum.gameNotStartedErr
-        }
-
-        if (!this.checkIfPlayerExists(serverName, playerName)) {
-            return ReturnEnum.illegalPlayerErr
-        }
-
-        if (!this.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return ReturnEnum.playerNotOnTurnErr
-        }
-
-        if (!this.checkIfPlayersLastMove(serverName, playerName)) {
-            return ReturnEnum.turnIsNotOver
-        }
-
-        if (!this.checkIfFieldFree(playerName, serverName, field)) {
-            return ReturnEnum.fieldAlreadySetErr;
-        }
-
-        this.dicerpokerStore.setPointsToGameView(playerName, serverName, field);
-
-        let players = this.getPlayers(serverName, playerName);
-        let end = this.checkIfGameEnd(players[0], players[1]);
-
-        if (!end) {
-            return ReturnEnum.setSuccess;
-        } else {
-            return ReturnEnum.gameEnd;
-        }
-    }
-
-    routerGetPlayersField(playerName: string, serverName: number): Map<string, PointsField> | ReturnEnum {
-        if (this.getGameState(serverName) != GameState.running) {
-            return ReturnEnum.gameNotStartedErr
-        }
-
-        if (!this.checkIfPlayerExists(serverName, playerName)) {
-            return ReturnEnum.illegalPlayerErr
-        }
-
-        if (!this.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return ReturnEnum.playerNotOnTurnErr
-        }
-
-        if (!this.checkIfPlayersLastMove(serverName, playerName)) {
-            return ReturnEnum.turnIsNotOver
-        }
-
-        return this.dicerpokerStore.getPlayersField(playerName, serverName);
-    }
-
-    routerGetSumField(playerName: string, serverName: number): Map<string, PointsField> | ReturnEnum {
-        if (this.getGameState(serverName) != GameState.running) {
-            return ReturnEnum.gameNotStartedErr
-        }
-
-        if (!this.checkIfPlayerExists(serverName, playerName)) {
-            return ReturnEnum.illegalPlayerErr
-        }
-
-        if (!this.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return ReturnEnum.playerNotOnTurnErr
-        }
-
-        if (!this.checkIfPlayersLastMove(serverName, playerName)) {
-            return ReturnEnum.turnIsNotOver
-        }
-
-        return this.dicerpokerStore.getSumField(playerName, serverName);
-    }
-
-    routerTurnChange(playerName: string, serverName: number): string | ReturnEnum {
-        if (this.getGameState(serverName) != GameState.running) {
-            return ReturnEnum.gameNotStartedErr
-        }
-
-        return this.dicerpokerStore.turnChange(playerName, serverName);
-    }
-
-    routerDisconnect(playerName: string, serverName: number) {
-        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.running) {
-            this.dicerpokerStore.disconnect(playerName, serverName);
-        } else {
-            return ReturnEnum.gameNotStartedErr
-        }
-    }
-
-
-    //valid check funtions
-
     getRejoinData(serverName: number, playerName: string): GameNotExists | RejoinData {
         let game = this.dicerpokerStore.getGame(serverName);
 
@@ -177,10 +48,22 @@ export class DicepokerService {
             let player = game.player1.playerName == playerName ? game.player1 : game.player2;
             let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
 
+            if (game.state == GameState.finished) {
+                return {
+                    type: RejoinType.end,
+                    dices: player.dices,
+                    holdDices: [],
+                    playerField: null,
+                    sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
+                    actPlayer: player.points > opponent.points ? player.playerName : opponent.playerName,
+                    moves: 0,
+                }
+            }
             if (player.isOnMove && player.movesLeft > 0) {
                 return {
                     type: RejoinType.dice,
                     dices: player.dices,
+                    holdDices: [],
                     playerField: null,
                     sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
                     actPlayer: player.isOnMove ? player.playerName : opponent.playerName,
@@ -190,6 +73,7 @@ export class DicepokerService {
                 return {
                     type: RejoinType.playerField,
                     dices: player.dices,
+                    holdDices: [],
                     playerField: JSON.stringify(Array.from(this.dicerpokerStore.getPlayersField(playerName, serverName).entries())),
                     sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
                     actPlayer: player.isOnMove ? player.playerName : opponent.playerName,
@@ -198,7 +82,8 @@ export class DicepokerService {
             } else {
                 return {
                     type: RejoinType.sumField,
-                    dices: player.dices,
+                    dices: opponent.dices,
+                    holdDices: [],
                     playerField: null,
                     sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
                     actPlayer: player.isOnMove ? player.playerName : opponent.playerName,
@@ -208,20 +93,126 @@ export class DicepokerService {
         }
     }
 
-    getGameState(serverName: number): GameState {
-        let game = this.dicerpokerStore.getGame(serverName);
+    routerGetNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): ThrowRes | GetError {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.unknown) {
+            return GetError.gameNotExists;
+        }
 
-        if (game == GameNotExists.gameNotExistsError) return GameState.unknown
-        else return game.state
-    }
+        if (!this.checkIfPlayerExists(serverName, playerName)) {
+            return GetError.unknownPlayer
+        }
 
+        if (this.getPlayerMoves(serverName, playerName) == 3) {
+            let dices = [
+                {dice: Dice.one, change: true},
+                {dice: Dice.one, change: true},
+                {dice: Dice.one, change: true},
+                {dice: Dice.one, change: true},
+                {dice: Dice.one, change: true}];
+
+            return this.dicerpokerStore.getNewDices(dices, playerName, serverName);
+        } else {
+            return this.dicerpokerStore.getNewDices(receiveDices, playerName, serverName);
+        }
+    } //finish
+
+    routerSetField(playerName: string, serverName: number, field: string): SetError | SetSuccess {
+        if (this.getGameState(serverName) != GameState.running) {
+            return SetError.gameNotStarted
+        }
+
+        if (this.getGameState(serverName) == GameState.unknown) {
+            return SetError.gameNotExists
+        }
+
+        if (!this.checkIfPlayerExists(serverName, playerName)) {
+            return SetError.unknownPlayer
+        }
+
+        if (!this.checkIfPlayerIsOnTurn(serverName, playerName)) {
+            return SetError.wrongPlayer
+        }
+
+        if (!this.checkIfFieldFree(playerName, serverName, field)) {
+            return SetError.fieldFull;
+        }
+
+        this.dicerpokerStore.setField(playerName, serverName, field);
+
+        let players = this.getPlayers(serverName);
+        let end = this.checkIfGameEnd(players);
+
+        if (!end) {
+            return SetSuccess.update;
+        } else {
+            this.dicerpokerStore.setGameEnd(serverName);
+            return SetSuccess.end;
+        }
+    } //finish
+
+    routerGetPlayersField(playerName: string, serverName: number): Map<string, PointsField> | GetError {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.unknown) {
+            return GetError.gameNotExists;
+        }
+
+        if (!this.checkIfPlayerExists(serverName, playerName)) {
+            return GetError.unknownPlayer
+        }
+
+        return this.dicerpokerStore.getPlayersField(playerName, serverName);
+    } //finish
+
+    routerGetSumField(playerName: string, serverName: number): Map<string, PointsField> | GetError {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.unknown) {
+            return GetError.gameNotExists;
+        }
+
+        if (!this.checkIfPlayerExists(serverName, playerName)) {
+            return GetError.unknownPlayer
+        }
+
+        return this.dicerpokerStore.getSumField(playerName, serverName);
+    } //finish
+
+    routerGetActivePlayer(playerName: string, serverName: number): string | GetError {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.unknown) {
+            return GetError.gameNotExists;
+        }
+
+        if (!this.checkIfPlayerExists(serverName, playerName)) {
+            return GetError.unknownPlayer
+        }
+
+        let players = this.getPlayers(serverName);
+        let activePlayer = "";
+
+        for (let player of players) {
+            if (player.isOnMove) {
+                activePlayer = player.playerName;
+                break
+            }
+        }
+
+        return activePlayer;
+    } //finish
+
+    routerDisconnect(playerName: string, serverName: number): null | GetError {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.running) {
+            this.dicerpokerStore.disconnect(playerName, serverName);
+            return null;
+        } else {
+            return GetError.gameNotExists
+        }
+    } //finish
+
+
+    //CHECK-FUNCTIONS
     checkIfPlayerExists(serverName: number, playerName: string): boolean {
         let game = this.dicerpokerStore.getGame(serverName);
 
         if (game == GameNotExists.gameNotExistsError) return false
         else return game.player1.playerName == playerName || game.player2.playerName == playerName;
-    }
-
+    } //finish
     checkIfPlayerIsOnTurn(serverName: number, playerName: string): boolean {
         let game = this.dicerpokerStore.getGame(serverName);
 
@@ -231,30 +222,7 @@ export class DicepokerService {
 
             return player.isOnMove;
         }
-    }
-
-    checkIfPlayersLastMove(serverName: number, playerName: string): boolean {
-        let game = this.dicerpokerStore.getGame(serverName);
-
-        if (game == GameNotExists.gameNotExistsError) return false
-        else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-            return player.movesLeft == 0;
-        }
-    }
-
-    getPlayers(serverName: number, playerName: string): Player[] {
-        let game = this.dicerpokerStore.getGame(serverName);
-
-        if (game == GameNotExists.gameNotExistsError) return []
-        else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-            let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
-
-            return [player, opponent]
-        }
-    }
-
+    } //finish
     checkIfFieldFree(playerName: string, serverName: number, field: string): boolean {
         let game = this.dicerpokerStore.getGame(serverName);
 
@@ -311,24 +279,56 @@ export class DicepokerService {
         return true;
     }
 
-    checkIfGameEnd(p1: Player, p2: Player) {
-        let pointsField1 = p1.pointsField;
-        let pointsField2 = p2.pointsField;
-
-        for (const [key, value] of Object.entries(pointsField1)) {
-            if (value === -1) {
-                return false;
+    checkIfGameEnd(players: Player[]) {
+        for (let player of players) {
+            for (const [key, value] of Object.entries(player.pointsField)) {
+                if (value === -1) {
+                    return false;
+                }
             }
         }
-        for (const [key, value] of Object.entries(pointsField2)) {
-            if (value === -1) {
-                return false;
+        return true
+    } //finish
+
+
+    //GET-FUNCTIONS
+    getPlayersAndSums(serverName: number): PlayerAndSum[] {
+        let game = this.dicerpokerStore.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return []
+        else {
+            let players = this.getPlayers(serverName);
+            let playersAndSums = []
+
+            for (let player of players) {
+                playersAndSums.push({playerName: player.playerName, points: player.points})
             }
+
+            return playersAndSums;
         }
+    } //finish
+    getGameState(serverName: number): GameState {
+        let game = this.dicerpokerStore.getGame(serverName);
 
-        return true;
-    }
+        if (game == GameNotExists.gameNotExistsError) return GameState.unknown
+        else return game.state
+    } //finish
+    getPlayers(serverName: number): Player[] {
+        let game = this.dicerpokerStore.getGame(serverName);
 
+        if (game == GameNotExists.gameNotExistsError) return []
+        else {
+            return [game.player1, game.player2]
+        }
+    } //finish
+    getPlayer(serverName: number, playerName: string) {
+        let game = this.dicerpokerStore.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return null
+        else {
+            return game.player1.playerName == playerName ? game.player1 : game.player2;
+        }
+    } //finish
     getPlayerMoves(serverName: number, playerName: string): number {
         let game = this.dicerpokerStore.getGame(serverName);
 
@@ -338,8 +338,7 @@ export class DicepokerService {
 
             return player.movesLeft;
         }
-    }
-
+    } //finish
     getSumF(serverName: number, playerName: string) {
         let game = this.dicerpokerStore.getGame(serverName);
 
@@ -355,16 +354,5 @@ export class DicepokerService {
 
             return map;
         }
-    }
-
-    getPlayer(serverName: number, playerName: string) {
-        let game = this.dicerpokerStore.getGame(serverName);
-
-        if (game == GameNotExists.gameNotExistsError) return null
-        else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-            return player;
-        }
-    }
-
+    } //check
 }

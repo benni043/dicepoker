@@ -26,6 +26,16 @@ export enum GameState {
     unknown
 }
 
+export type ThrowRes = {
+    newDices: NewDices,
+    moves: number
+}
+
+export type NewDices = {
+    dices: Dice[],
+    holdDices: Dice[]
+}
+
 export enum Dice {
     one,
     two,
@@ -50,24 +60,38 @@ export type PointsField = {
     sum: number,
 }
 
+export enum GetError {
+    gameNotExists,
+    unknownPlayer,
+}
+
+export enum SetError {
+    gameNotExists,
+    gameNotStarted,
+    unknownPlayer,
+    wrongPlayer,
+    fieldFull
+}
+
+export enum SetSuccess {
+    update,
+    end
+}
 export enum ReturnEnum {
     gameFullErr,
     joinSuccess,
     illegalPlayerErr,
-    gameNotStartedErr,
-    throwSuccess,
-    playerNotOnTurnErr,
-    throwSuccessEnd,
-    setSuccess,
-    turnIsNotOver,
-    turnIsOver,
-    fieldAlreadySetErr,
-    gameRunning,
-    gameEnd,
-    player1Won,
-    player2Won,
-    moves0,
     rejoin,
+}
+
+export type End = {
+    end: boolean,
+    playersAndSums: PlayerAndSum[]
+}
+
+export type PlayerAndSum = {
+    playerName: string,
+    points: number
 }
 
 export enum GameNotExists {
@@ -77,6 +101,7 @@ export enum GameNotExists {
 export type RejoinData = {
     type: RejoinType,
     dices: Dice[],
+    holdDices: Dice[]
     playerField: string | null,
     sumField: string,
     actPlayer: string,
@@ -86,7 +111,8 @@ export type RejoinData = {
 export enum RejoinType {
     dice,
     playerField,
-    sumField
+    sumField,
+    end
 }
 
 
@@ -100,31 +126,9 @@ export type ChangeDiceObject = {
     change: boolean
 }
 
-export type PlayerSocketsAndNames = {
-    player1ws: Socket,
-    player2ws: Socket,
-    player1Name: string,
-    player2Name: string
-}
-
-export type Throw = {
-    returnEnum: ReturnEnum,
-    dices: Dice[],
-}
-
 export type ThrowData = {
     standardGameData: StandardGameData,
     receiveDices: ChangeDiceObject[]
-}
-
-export type JoinReturn = {
-    returnEnum: ReturnEnum,
-    response: PlayerSocketsAndNames | null
-}
-
-export type SetPointsReturn = {
-    returnEnum: ReturnEnum
-    sumField: Map<string, PointsField> | null,
 }
 
 export type SetPointData = {

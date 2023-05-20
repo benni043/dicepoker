@@ -1,6 +1,5 @@
 import {Component} from '@angular/core';
 import {RouterService} from "./router.service";
-import {Dice} from "../../../backend/src/game";
 
 @Component({
   selector: 'app-root',
@@ -14,5 +13,4 @@ export class AppComponent {
   constructor(public routerService: RouterService) {
   }
 
-  protected readonly Dice = Dice;
 }

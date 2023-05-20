@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {Dice} from "../../../../backend/src/game";
+import {Dice} from "../game";
 
 @Component({
   selector: 'app-dice',

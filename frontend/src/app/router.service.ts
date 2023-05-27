@@ -48,6 +48,9 @@ export class RouterService {
     this.socket.on("wrongPlayer", () => {
       console.error("wrongPlayer")
     })
+    this.socket.on("illegalPlayerErr", () => {
+      this.error("Dieser Name ist bereits vergeben!")
+    })
     this.socket.on("turnIsOver", () => {
       this.error("Du hast bereits 3 mal gewürfelt!");
     })
@@ -56,6 +59,9 @@ export class RouterService {
     })
     this.socket.on("gameNotExistsErr", () => {
       this.error("Dieser Server ist voll!");
+    })
+    this.socket.on("gameEnd", () => {
+      this.error("Das Spiel ist bereits beendet!")
     })
 
 
@@ -76,40 +82,30 @@ export class RouterService {
       this.joined = true;
 
       switch (rejoinData.type) {
-        case RejoinType.end: {
-          this.winner = rejoinData.actPlayer
-          this.sumField = new Map(JSON.parse(rejoinData.sumField));
-          this.end = true;
-          return
-        }
         case RejoinType.playerField: {
           this.bools = this.fillBools(new Map(JSON.parse(rejoinData.sumField!)), this.playerName);
           this.playersField = new Map(JSON.parse(rejoinData.playerField!));
-          this.activePlayer = this.playerName;
+          this.activePlayer = rejoinData.actPlayer;
           break
         }
         case RejoinType.sumField: {
-          this.sumField = new Map(JSON.parse(rejoinData.sumField));
-          this.activePlayer = "opponent";
+          this.sumField = new Map(JSON.parse(rejoinData.sumField!));
+          this.activePlayer = rejoinData.actPlayer;
           break;
         }
         case RejoinType.dice: {
-          this.sumField = new Map(JSON.parse(rejoinData.sumField));
-          this.activePlayer = this.playerName;
+          this.sumField = new Map(JSON.parse(rejoinData.sumField!));
+          this.activePlayer = rejoinData.actPlayer;
         }
       }
 
-      if (rejoinData.dices.length == 0) {
-        this.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
-      } else {
-        this.dices = rejoinData.dices
-      }
+      this.movesLeft = rejoinData.moves;
+      this.dices = rejoinData.dices;
+      this.holdDices = rejoinData.holdDices;
 
-      this.activePlayer = rejoinData.actPlayer
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
     })
-
 
     this.socket.on("newDices", (res: ThrowRes) => {
       this.dices = res.newDices.dices;
@@ -128,6 +124,7 @@ export class RouterService {
 
     this.socket.on("setPlayersField", (playersField: string) => {
       let map: Map<string, PointsField> = new Map(JSON.parse(playersField));
+      map.get(this.playerName)!.sum! = this.sumField!.get(this.playerName)?.sum!;
       let name = map.entries().next().value[0];
 
       this.bools = this.fillBools(this.sumField!, name)
@@ -245,6 +242,14 @@ export class RouterService {
     })
   }
 
+  leaveThrow() {
+    this.throwEnd = true;
+
+    this.socket.emit("getPlayersField", ({
+      playerName: this.playerName,
+      serverName: this.serverName
+    } as StandardGameData));
+  }
   switched(dices: Dice[], holdDices: Dice[]) {
     this.socket.emit("switched", {
       newDices: {dices: dices, holdDices: holdDices},

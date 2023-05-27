@@ -10,7 +10,8 @@ import {
     RejoinData,
     RejoinType,
     ReturnEnum,
-    SetError, SetSuccess,
+    SetError,
+    SetSuccess,
     StandardGameData,
     ThrowRes
 } from "../game";
@@ -21,8 +22,13 @@ export class DicepokerService {
     private dicerpokerStore: DicepokerStore = new DicepokerStore();
 
     routerJoin(standardGameData: StandardGameData, ws: Socket): GameNotExists | RejoinData | ReturnEnum {
+        if (this.getGameState(standardGameData.serverName) == GameState.finished) {
+            return ReturnEnum.gameEnd;
+        }
+
         if (this.getGameState(standardGameData.serverName) == GameState.running) {
             let player = this.getPlayer(standardGameData.serverName, standardGameData.playerName)!;
+
             if (!player.isOnline && player.playerName == standardGameData.playerName) {
                 this.dicerpokerStore.rejoin(standardGameData.serverName, standardGameData.playerName, ws);
 
@@ -48,46 +54,35 @@ export class DicepokerService {
             let player = game.player1.playerName == playerName ? game.player1 : game.player2;
             let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
 
-            if (game.state == GameState.finished) {
-                return {
-                    type: RejoinType.end,
-                    dices: player.dices,
-                    holdDices: [],
-                    playerField: null,
-                    sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
-                    actPlayer: player.points > opponent.points ? player.playerName : opponent.playerName,
-                    moves: 0,
-                }
-            }
             if (player.isOnMove && player.movesLeft > 0) {
                 return {
                     type: RejoinType.dice,
                     dices: player.dices,
-                    holdDices: [],
+                    holdDices: player.holdDices,
                     playerField: null,
-                    sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
-                    actPlayer: player.isOnMove ? player.playerName : opponent.playerName,
-                    moves: player.isOnMove ? player.movesLeft : opponent.movesLeft,
+                    sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
+                    actPlayer: player.playerName,
+                    moves: player.movesLeft,
                 };
             } else if (player.isOnMove && player.movesLeft == 0) {
                 return {
                     type: RejoinType.playerField,
                     dices: player.dices,
-                    holdDices: [],
+                    holdDices: player.holdDices,
                     playerField: JSON.stringify(Array.from(this.dicerpokerStore.getPlayersField(playerName, serverName).entries())),
-                    sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
-                    actPlayer: player.isOnMove ? player.playerName : opponent.playerName,
-                    moves: player.isOnMove ? player.movesLeft : opponent.movesLeft,
+                    sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
+                    actPlayer: player.playerName,
+                    moves: player.movesLeft,
                 };
             } else {
                 return {
                     type: RejoinType.sumField,
                     dices: opponent.dices,
-                    holdDices: [],
+                    holdDices: player.holdDices,
                     playerField: null,
-                    sumField: JSON.stringify(Array.from(this.getSumF(serverName, playerName).entries())),
-                    actPlayer: player.isOnMove ? player.playerName : opponent.playerName,
-                    moves: player.isOnMove ? player.movesLeft : opponent.movesLeft,
+                    sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
+                    actPlayer: opponent.playerName,
+                    moves: opponent.movesLeft,
                 };
             }
         }
@@ -225,7 +220,7 @@ export class DicepokerService {
     } //finish
 
     routerDisconnect(playerName: string, serverName: number): null | GetError {
-        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.running) {
+        if (this.getGameState(serverName) == GameState.joining || this.getGameState(serverName) == GameState.running || this.getGameState(serverName) == GameState.finished) {
             this.dicerpokerStore.disconnect(playerName, serverName);
             return null;
         } else {
@@ -351,7 +346,7 @@ export class DicepokerService {
             return player.movesLeft;
         }
     } //finish
-    getSumF(serverName: number, playerName: string) {
+    getSumField(serverName: number, playerName: string) {
         let game = this.dicerpokerStore.getGame(serverName);
 
         if (game == GameNotExists.gameNotExistsError) return new Map<string, PointsField>()

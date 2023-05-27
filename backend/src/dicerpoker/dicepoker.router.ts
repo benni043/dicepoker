@@ -45,7 +45,6 @@ export class DicepokerRouter {
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
                 let res = this.dicepokerService.routerJoin(standardGameData, ws);
                 let players = this.dicepokerService.getPlayers(standardGameData.serverName);
-                let sumField = this.dicepokerService.getSumF(standardGameData.serverName, standardGameData.playerName);
 
                 if (res == GameNotExists.gameNotExistsError) {
                     ws.emit("gameNotExistsErr");
@@ -53,9 +52,13 @@ export class DicepokerRouter {
                     ws.emit("gameFullErr")
                 } else if (res == ReturnEnum.illegalPlayerErr) {
                     ws.emit("illegalPlayerErr")
+                } else if (res == ReturnEnum.gameEnd) {
+                    ws.emit("gameEnd")
                 } else if (res == ReturnEnum.joinSuccess) {
                     playerName = standardGameData.playerName
                     serverName = standardGameData.serverName;
+
+                    let sumField = this.dicepokerService.getSumField(serverName, playerName)
 
                     for (let player of players) {
                         if (player.socket != undefined) {
@@ -154,7 +157,7 @@ export class DicepokerRouter {
                         player.socket!.emit("update");
                     }
                 } else {
-                    let sumField = this.dicepokerService.getSumF(serverName, playerName);
+                    let sumField = this.dicepokerService.getSumField(serverName, playerName);
                     let winner = this.dicepokerService.getWinner(serverName, playerName);
 
                     for (let player of players) {

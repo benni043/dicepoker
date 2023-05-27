@@ -56,4 +56,8 @@ export class DiceDisplayComponent {
 
     this.routerService.throw(receiveDices);
   }
+
+  throwEnd() {
+    this.routerService.leaveThrow();
+  }
 }

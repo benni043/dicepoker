@@ -1,7 +1,8 @@
 <div id="main">
   <div class="titleFlex">
     <div *ngFor="let elem of getNames(); index as i">
-      <div class="valElem borderBottom" [class.headLine]="i == 0" [class.borderVert2]="i > 0 && i < getNames().length-1"
+      <div class="valElem borderBottom center" [class.headLine]="i == 0"
+           [class.borderVert2]="i > 0 && i < getNames().length-1"
            [class.borderVert]="i == 0"
            id="titleElem">{{elem}}</div>
     </div>
@@ -9,7 +10,7 @@
 
   <div *ngFor="let elem of list; index as i">
     <div class="valElemRow">
-      <div class="valElem borderVert left borderBottom2" id="type">{{list[i]}}</div>
+      <div class="valElem borderVert left borderBottom2 center" id="type">{{names[i]}}</div>
 
       <div *ngFor="let ele of getRowElements(i); index as j">
         <button *ngIf="ele != -1 && readonlyV" (click)="click(i)" class="valElem value borderBottom2"
@@ -18,18 +19,21 @@
         <button *ngIf="ele == -1 && readonlyV" (click)="click(i)" class="valElem value borderBottom2"
                 [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV"></button>
 
-
-        <button *ngIf="!readonlyV" (click)="click(i)" class="valElem value borderBottom2"
-                [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV" [disabled]="!bools[i]">{{ele}}</button>
+        <button #btn *ngIf="!readonlyV" (mouseover)="bools[i] && add(btn.innerText)" (mouseleave)="reset()" (click)="click(i)"
+                class="valElem value borderBottom2"
+                [class.borderVert2]="j < getRowElements(i).length-1" [class.buttonWrite]="!readonlyV"
+                [disabled]="!bools[i]">{{ele}}</button>
       </div>
     </div>
   </div>
 
   <div class="valElemRow">
-    <div class="valElem borderVert left">sum</div>
+    <div class="valElem borderVert left center">Gesamt:</div>
 
     <div *ngFor="let elem of getSums(); index as i">
-      <div class="valElem value" [class.borderVert2]="i < map.size-1">{{elem}}</div>
+      <div *ngIf="readonlyV" class="valElem value x" [class.borderVert2]="i < map.size-1">{{elem}}</div>
     </div>
+
+    <div *ngIf="!readonlyV" class="valElem value">{{sum}}</div>
   </div>
 </div>

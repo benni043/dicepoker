@@ -21,6 +21,10 @@
   align-items: center;
 }
 
+.center {
+  text-align: center!important;
+}
+
 .valElem {
   text-align: center;
   min-width: 85px;
@@ -40,7 +44,7 @@ button {
 }
 
 .buttonWrite:not(:disabled):hover {
-  background-color: aquamarine;
+  background-color: #f1f1f1;
 }
 
 .buttonWrite:disabled {

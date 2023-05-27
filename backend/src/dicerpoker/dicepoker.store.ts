@@ -1,4 +1,14 @@
-import {ChangeDiceObject, Dice, Game, GameNotExists, GameState, PointsField, StandardGameData, ThrowRes} from "../game";
+import {
+    ChangeDiceObject,
+    Dice,
+    Game,
+    GameNotExists,
+    GameState,
+    Player,
+    PointsField,
+    StandardGameData,
+    ThrowRes
+} from "../game";
 import {Socket} from "socket.io";
 
 export class DicepokerStore {
@@ -12,6 +22,7 @@ export class DicepokerStore {
                     playerName: standardGameData.playerName,
                     isOnline: true,
                     dices: [],
+                    holdDices: [],
                     movesLeft: 3,
                     points: 0,
                     socket: ws,
@@ -49,6 +60,7 @@ export class DicepokerStore {
                     playerName: "",
                     isOnline: false,
                     dices: [],
+                    holdDices: [],
                     movesLeft: 3,
                     points: 0,
                     socket: undefined,
@@ -119,7 +131,7 @@ export class DicepokerStore {
             }
         }
 
-        this.setPlayerSettings(serverName, playerName, [...newDices, ...holdDices]);
+        this.setPlayerSettings(serverName, playerName, newDices, holdDices);
 
         return {newDices: {dices: newDices, holdDices: holdDices}, moves: player.movesLeft};
     } //finish
@@ -192,26 +204,24 @@ export class DicepokerStore {
 
         player.pointsField.sum = player.points;
 
-        if (player.movesLeft == 0) {
-            player.isOnMove = false;
-            player.dices = [];
+        player.isOnMove = false;
+        player.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
 
-            opponent.isOnMove = true;
-            player.movesLeft = 3;
-            player.pointsFieldTMP = {
-                ones: 0,
-                twos: 0,
-                threes: 0,
-                fours: 0,
-                fives: 0,
-                sixes: 0,
-                fullHouse: 0,
-                street: 0,
-                poker: 0,
-                grande: 0,
-                doubleGrande: 0,
-                sum: 0,
-            }
+        opponent.isOnMove = true;
+        player.movesLeft = 3;
+        player.pointsFieldTMP = {
+            ones: 0,
+            twos: 0,
+            threes: 0,
+            fours: 0,
+            fives: 0,
+            sixes: 0,
+            fullHouse: 0,
+            street: 0,
+            poker: 0,
+            grande: 0,
+            doubleGrande: 0,
+            sum: 0,
         }
     } //finish
 
@@ -237,19 +247,17 @@ export class DicepokerStore {
         return map;
     } //finish
 
-    private setPlayerSettings(serverName: number, playerName: string, newDices: Dice[]): void {
+    private setPlayerSettings(serverName: number, playerName: string, dices: Dice[], holdDices: Dice[]): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
 
-        player.dices = newDices;
+        player.dices = dices;
+        player.holdDices = holdDices;
         player.movesLeft--;
 
-
-
-        player.pointsFieldTMP = this.calculateSetPointsField(newDices);
+        player.pointsFieldTMP = this.calculateSetPointsField([...dices, ...holdDices], player);
     } //finish
 
-    private calculateSetPointsField(dices: Dice[]): PointsField {
+    private calculateSetPointsField(dices: Dice[], player: Player): PointsField {
         let setPoints: PointsField = {
             ones: 0,
             twos: 0,
@@ -304,17 +312,17 @@ export class DicepokerStore {
 
         // Full house
         if (uniqueDiceCount === 2 && diceCounts.some(count => count === 2) && diceCounts.some(count => count === 3)) {
-            setPoints.fullHouse = 20;
+            player.holdDices.length == 0 ? setPoints.fullHouse = 25 : setPoints.fullHouse = 20;
         }
 
         // Street
         if (uniqueDiceCount === 5 && (dices.includes(Dice.one) && dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) || dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) && dices.includes(Dice.six))) {
-            setPoints.street = 30;
+            player.holdDices.length == 0 ? setPoints.street = 35 : setPoints.street = 30;
         }
 
         // Poker
         if (uniqueDiceCount === 2 && (diceCounts.some(count => count === 4))) {
-            setPoints.poker = 40;
+            player.holdDices.length == 0 ? setPoints.poker = 45 : setPoints.poker = 40;
         }
 
         // Grande
@@ -324,7 +332,7 @@ export class DicepokerStore {
 
         // Double Grande
         if (uniqueDiceCount === 1 && (diceCounts.some(count => count === 5))) {
-            setPoints.doubleGrande = 100;
+            player.holdDices.length == 0 ? setPoints.doubleGrande = 100 : setPoints.doubleGrande = 0;
         }
 
         return setPoints;
@@ -337,11 +345,12 @@ export class DicepokerStore {
         game.numberOfPlayersWhoLeft++;
         player.isOnline = false;
 
-        if(game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
+        console.log(game.numberOfPlayersWhoLeft)
+
+        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
             this.game.delete(serverName);
         }
     } //finish
-
 
 
     dices: Dice[] = [Dice.one, Dice.two, Dice.three, Dice.four, Dice.five, Dice.six];

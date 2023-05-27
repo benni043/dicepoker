@@ -15,9 +15,9 @@
   </div>
 
   <div class="game">
-    <app-field [readonlyV]="true" [playersField]="false" [map]="routerService.sumField"
+    <app-field [readonlyV]="true" [playersField]="false" [map]="routerService.sumField!"
                *ngIf="routerService.sumField != undefined"></app-field>
-    <app-field [readonlyV]="false" [playersField]="true" [bools]="routerService.bools" [map]="routerService.playersField"
+    <app-field [readonlyV]="false" [playersField]="true" [bools]="routerService.bools" [map]="routerService.playersField!"
                *ngIf="routerService.playersField != undefined"></app-field>
 
     <app-dice-display [holdDices]="routerService.holdDices" [dices]="routerService.dices"></app-dice-display>

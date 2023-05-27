@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {RouterService} from "../router.service";
 import {PointsField} from "../game";
 
@@ -7,7 +7,7 @@ import {PointsField} from "../game";
   templateUrl: './field.component.html',
   styleUrls: ['./field.component.scss']
 })
-export class FieldComponent {
+export class FieldComponent implements OnInit{
 
   constructor(private routerService: RouterService) {
     // this.map = new Map();
@@ -43,6 +43,10 @@ export class FieldComponent {
     // })
   }
 
+  ngOnInit() {
+      this.sum = this.getSums()[0];
+  }
+
   @Input() map!: Map<string, PointsField>;
 
   @Input() readonlyV: boolean = true;
@@ -50,7 +54,10 @@ export class FieldComponent {
 
   @Input() bools: boolean[] = [];
 
+  sum: number = 0;
+
   list: string[] = ["ones", "twos", "threes", "fours", "fives", "sixes", "fullHouse", "street", "poker", "grande", "doubleGrande"];
+  names: string[] = ["9", "10", "B", "D", "K", "A", "F", "St", "P", "G", "DG"];
 
   getRowElements(index: number): number[] {
     const values: number[] = [];
@@ -76,8 +83,16 @@ export class FieldComponent {
     return sums;
   }
 
+  add(val: string) {
+    this.sum = this.getSums()[0] + parseInt(val);
+  }
+
+  reset() {
+    this.sum = this.getSums()[0];
+  }
+
   getNames(): string[] {
-    let list = ["DicePoker"];
+    let list = ["WürfelPoker"];
 
     for (let key of this.map.keys()) {
       list.push(key);
@@ -91,4 +106,6 @@ export class FieldComponent {
       this.routerService.sendValue(this.list[i]);
     }
   }
+
+  protected readonly parseInt = parseInt;
 }

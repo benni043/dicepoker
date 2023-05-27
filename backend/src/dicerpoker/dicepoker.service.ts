@@ -199,10 +199,6 @@ export class DicepokerService {
             return GetError.unknownPlayer
         }
 
-        if (!this.checkIfPlayerIsOnTurn(serverName, playerName)) {
-            return this.getSumF(serverName, playerName);
-        }
-
         return this.dicerpokerStore.getSumField(playerName, serverName);
     } //finish
 
@@ -310,7 +306,6 @@ export class DicepokerService {
         }
         return true;
     }
-
     checkIfGameEnd(players: Player[]) {
         for (let player of players) {
             for (const [key, value] of Object.entries(player.pointsField)) {
@@ -372,7 +367,6 @@ export class DicepokerService {
             return map;
         }
     } //check
-
     getWinner(serverName: number, playerName: string): string {
         let game = this.dicerpokerStore.getGame(serverName);
 

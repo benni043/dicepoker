@@ -31,36 +31,30 @@ export class RouterService {
     this.socket = connect(environment.apiURL);
 
     this.socket.on("gameFullErr", () => {
-      console.log("Das Spiel ist voll!");
       this.error("Das Spiel ist voll!");
     })
     this.socket.on("gameNotStarted", () => {
-      console.log("gameNotStarted");
+      console.error("gameNotStarted");
     })
     this.socket.on("gameNotExists", () => {
-      console.log("gameNotExists");
+      console.error("gameNotExists");
     })
     this.socket.on("gameFinished", () => {
-      console.log("gameFinished");
+      this.error("Das Spiel ist bereits beendet!");
     })
     this.socket.on("unknownPlayer", () => {
-      console.log("unknownPlayer");
       this.error("Dieser Name ist bereits vergeben!")
     })
     this.socket.on("wrongPlayer", () => {
-      console.log("Du bist nicht an der Reihe!");
-      this.error("Du bist nicht an der Reihe!");
+      console.error("wrongPlayer")
     })
     this.socket.on("turnIsOver", () => {
-      console.log("Du hast bereits 3 mal gewürfelt!")
       this.error("Du hast bereits 3 mal gewürfelt!");
     })
     this.socket.on("fieldFull", () => {
-      console.log("Dieses Feld ist bereits belegt!");
-      console.log("Dieses Feld ist bereits belegt!")
+      this.error("Dieses Feld ist bereits belegt!")
     })
     this.socket.on("gameNotExistsErr", () => {
-      console.log("Dieser Server ist voll!")
       this.error("Dieser Server ist voll!");
     })
 
@@ -69,7 +63,6 @@ export class RouterService {
       console.log("joinSucc");
 
       this.sumField = new Map(JSON.parse(sumField.sumField))
-
       this.joined = true;
 
       this.socket.emit("getActivePlayer", {
@@ -116,6 +109,7 @@ export class RouterService {
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
     })
+
 
     this.socket.on("newDices", (res: ThrowRes) => {
       this.dices = res.newDices.dices;
@@ -165,6 +159,7 @@ export class RouterService {
       this.playersField = null;
       this.sumField = null;
       this.dices = [];
+      this.movesLeft = 3;
 
       setTimeout(() => {
         this.sumField = map;

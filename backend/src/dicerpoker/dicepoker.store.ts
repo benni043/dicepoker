@@ -121,7 +121,6 @@ export class DicepokerStore {
 
         this.setPlayerSettings(serverName, playerName, [...newDices, ...holdDices]);
 
-        console.log(player.movesLeft)
         return {newDices: {dices: newDices, holdDices: holdDices}, moves: player.movesLeft};
     } //finish
 

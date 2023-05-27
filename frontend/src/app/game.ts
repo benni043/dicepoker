@@ -20,10 +20,10 @@ export type Player = {
 }
 
 export enum GameState {
-  joining,
-  running,
-  finished,
-  unknown
+  joining = "joining",
+  running = "running",
+  finished = "finished",
+  unknown = "unknown"
 }
 
 export type ThrowRes = {
@@ -37,10 +37,10 @@ export type NewDices = {
 }
 
 export enum Dice {
-  one,
-  two,
-  three,
-  four,
+  one ,
+  two ,
+  three ,
+  four ,
   five,
   six
 }
@@ -61,22 +61,24 @@ export type PointsField = {
 }
 
 export enum GetError {
-  gameNotExists,
-  unknownPlayer,
+  gameNotExists = "gameNotExists",
+  unknownPlayer = "unknownPlayer",
 }
 
 export enum SetError {
-  gameNotExists,
-  gameNotStarted,
-  unknownPlayer,
-  wrongPlayer,
-  fieldFull
+  gameNotExists = "gameNotExists",
+  gameNotStarted = "gameNotStarted",
+  gameFinished = "gameFinished",
+  unknownPlayer = "unknownPlayer",
+  wrongPlayer = "wrongPlayer",
+  fieldFull = "fieldFull"
 }
 
 export enum SetSuccess {
-  update,
-  end
+  update = "update",
+  end = "end"
 }
+
 export enum ReturnEnum {
   gameFullErr,
   joinSuccess,
@@ -85,17 +87,12 @@ export enum ReturnEnum {
 }
 
 export type End = {
-  end: boolean,
-  playersAndSums: PlayerAndSum[]
-}
-
-export type PlayerAndSum = {
-  playerName: string,
-  points: number
+  winner: string,
+  sumField: string
 }
 
 export enum GameNotExists {
-  gameNotExistsError
+  gameNotExistsError = "gameNotExistsError"
 }
 
 export type RejoinData = {

@@ -40,6 +40,9 @@ export class RouterService {
     this.socket.on("gameNotExists", () => {
       console.log("gameNotExists");
     })
+    this.socket.on("gameFinished", () => {
+      console.log("gameFinished");
+    })
     this.socket.on("unknownPlayer", () => {
       console.log("unknownPlayer");
       this.error("Dieser Name ist bereits vergeben!")
@@ -69,9 +72,11 @@ export class RouterService {
 
       this.joined = true;
 
-      this.socket.emit("getActivePlayer", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
+      this.socket.emit("getActivePlayer", {
+        serverName: this.serverName,
+        playerName: this.playerName
+      } as StandardGameData)
     })
-
     this.socket.on("rejoin", (rejoinData: RejoinData) => {
       console.log("rejoin");
 
@@ -112,7 +117,7 @@ export class RouterService {
       this.firstMove = rejoinData.moves == 3;
     })
 
-    this.socket.on("setNewDices", (res: ThrowRes) => {
+    this.socket.on("newDices", (res: ThrowRes) => {
       this.dices = res.newDices.dices;
       this.holdDices = res.newDices.holdDices;
       this.movesLeft = res.moves;
@@ -120,25 +125,14 @@ export class RouterService {
       if (res.moves == 0) {
         this.throwEnd = true;
 
-        // let sum = [];
-        // for (let dice of this.dices) {
-        //   sum.push(dice)
-        // }
-        // for (let holdDice of this.holdDices) {
-        //   sum.push(holdDice)
-        // }
-        //
-        // this.holdDices = [];
-        // this.dices = sum;
-
         this.socket.emit("getPlayersField", ({
           playerName: this.playerName,
           serverName: this.serverName
-        } as StandardGameData))
+        } as StandardGameData));
       }
     })
 
-    this.socket.on("setPlayersField", (playersField) => {
+    this.socket.on("setPlayersField", (playersField: string) => {
       let map: Map<string, PointsField> = new Map(JSON.parse(playersField));
       let name = map.entries().next().value[0];
 
@@ -151,25 +145,18 @@ export class RouterService {
       }, 10)
     })
 
-    this.socket.on("update", (res: End) => {
-      this.socket.emit("getSumField", ({playerName: this.playerName, serverName: this.serverName} as StandardGameData))
+    this.socket.on("end", (end: End) => {
+      this.end = true;
+      this.sumField = new Map(JSON.parse(end.sumField));
+      this.playersField = null;
+      this.winner = end.winner;
+    })
 
-      if (res.end) {
-        this.end = true;
-        this.activePlayer = "";
-
-        let biggestSum: number = res.playersAndSums[0].points;
-        let winner = res.playersAndSums[0].playerName;
-
-        for (let playersAndSum of res.playersAndSums) {
-          if (playersAndSum.points > biggestSum) {
-            biggestSum = playersAndSum.points;
-            winner = playersAndSum.playerName;
-          }
-        }
-
-        this.winner = winner;
-      }
+    this.socket.on("update", () => {
+      this.socket.emit("getSumField", ({
+        playerName: this.playerName,
+        serverName: this.serverName
+      } as StandardGameData))
     })
 
     this.socket.on("setSumField", (sumField) => {
@@ -183,7 +170,10 @@ export class RouterService {
         this.sumField = map;
 
         if (!this.end) {
-          this.socket.emit("getActivePlayer", {serverName: this.serverName, playerName: this.playerName} as StandardGameData)
+          this.socket.emit("getActivePlayer", {
+            serverName: this.serverName,
+            playerName: this.playerName
+          } as StandardGameData)
         }
       }, 10)
     })
@@ -202,34 +192,6 @@ export class RouterService {
       this.holdDices = newDices.holdDices;
     })
   }
-
-  // subtractArray(array1: number[], array2: number[]): number[] {
-  //   const countMap = new Map<number, number>();
-  //
-  //   for (const num of array1) {
-  //     countMap.set(num, (countMap.get(num) || 0) + 1);
-  //   }
-  //
-  //   for (const num of array2) {
-  //     if (countMap.has(num)) {
-  //       const count = countMap.get(num)!;
-  //       if (count > 1) {
-  //         countMap.set(num, count - 1);
-  //       } else {
-  //         countMap.delete(num);
-  //       }
-  //     }
-  //   }
-  //
-  //   const result: number[] = [];
-  //   for (const [num, count] of countMap) {
-  //     for (let i = 0; i < count; i++) {
-  //       result.push(num);
-  //     }
-  //   }
-  //
-  //   return result;
-  // }
 
   sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
     const sortedArray = Array.from(map.entries()).sort(([key1], [key2]) => key1.localeCompare(key2));
@@ -305,6 +267,7 @@ export class RouterService {
 
     this.dices = [];
     this.holdDices = [];
+
     for (let receiveDice of receiveDices) {
       if (receiveDice.change) {
         this.dices.push(receiveDice.dice);
@@ -313,7 +276,7 @@ export class RouterService {
       }
     }
 
-    this.socket.emit("getNewDices", ({
+    this.socket.emit("setDices", ({
       receiveDices: this.firstMove ? dices : receiveDices,
       standardGameData: {serverName: this.serverName, playerName: this.playerName},
     }))

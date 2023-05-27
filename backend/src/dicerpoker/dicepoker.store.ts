@@ -94,7 +94,7 @@ export class DicepokerStore {
             this.game.get(standardGameData.serverName)!.player2.isOnline = true;
             this.game.get(standardGameData.serverName)!.player2.socket = ws;
         }
-    } //finish
+    }
 
     rejoin(serverName: number, playerName: string, ws: Socket) {
         let game = this.game.get(serverName)!;
@@ -103,9 +103,9 @@ export class DicepokerStore {
         player.isOnline = true;
         game.numberOfPlayersWhoLeft--;
         player.socket = ws;
-    } //finish
+    }
 
-    getNewDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): ThrowRes {
+    setDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: number): ThrowRes {
         let newDices = []
         let holdDices = []
 
@@ -121,6 +121,7 @@ export class DicepokerStore {
 
         this.setPlayerSettings(serverName, playerName, [...newDices, ...holdDices]);
 
+        console.log(player.movesLeft)
         return {newDices: {dices: newDices, holdDices: holdDices}, moves: player.movesLeft};
     } //finish
 
@@ -130,6 +131,7 @@ export class DicepokerStore {
 
     setField(playerName: string, serverName: number, field: string): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName != playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
 
         switch (field) {
             case "ones": {
@@ -190,6 +192,28 @@ export class DicepokerStore {
         }
 
         player.pointsField.sum = player.points;
+
+        if (player.movesLeft == 0) {
+            player.isOnMove = false;
+            player.dices = [];
+
+            opponent.isOnMove = true;
+            player.movesLeft = 3;
+            player.pointsFieldTMP = {
+                ones: 0,
+                twos: 0,
+                threes: 0,
+                fours: 0,
+                fives: 0,
+                sixes: 0,
+                fullHouse: 0,
+                street: 0,
+                poker: 0,
+                grande: 0,
+                doubleGrande: 0,
+                sum: 0,
+            }
+        }
     } //finish
 
     getPlayersField(playerName: string, serverName: number): Map<string, PointsField> {
@@ -211,34 +235,17 @@ export class DicepokerStore {
         map.set(player.playerName, player.pointsField);
         map.set(opponent.playerName, opponent.pointsField);
 
-        player.isOnMove = false;
-        player.movesLeft = 3;
-        player.dices = [];
-        player.pointsFieldTMP = {
-            ones: 0,
-            twos: 0,
-            threes: 0,
-            fours: 0,
-            fives: 0,
-            sixes: 0,
-            fullHouse: 0,
-            street: 0,
-            poker: 0,
-            grande: 0,
-            doubleGrande: 0,
-            sum: 0,
-        }
-
-        opponent.isOnMove = true;
-
         return map;
     } //finish
 
     private setPlayerSettings(serverName: number, playerName: string, newDices: Dice[]): void {
         let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
 
         player.dices = newDices;
         player.movesLeft--;
+
+
 
         player.pointsFieldTMP = this.calculateSetPointsField(newDices);
     } //finish
@@ -331,10 +338,11 @@ export class DicepokerStore {
         game.numberOfPlayersWhoLeft++;
         player.isOnline = false;
 
-        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
+        if(game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
             this.game.delete(serverName);
         }
     } //finish
+
 
 
     dices: Dice[] = [Dice.one, Dice.two, Dice.three, Dice.four, Dice.five, Dice.six];

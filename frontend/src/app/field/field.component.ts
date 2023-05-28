@@ -48,6 +48,7 @@ export class FieldComponent implements OnInit{
   }
 
   @Input() map!: Map<string, PointsField>;
+  @Input() belegt: boolean[] = [true, false, true]
 
   @Input() readonlyV: boolean = true;
   @Input() playersField: boolean = false;

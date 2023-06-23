@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges} from '@angular/core';
 import {RouterService} from "../router.service";
 import {ChangeDiceObject, Dice} from "../game";
 
@@ -43,12 +43,12 @@ export class DiceDisplayComponent {
 
     this.dices.forEach(dice => {
       const change = true
-      receiveDices.push({ dice, change });
+      receiveDices.push({dice, change});
     });
 
     this.holdDices.forEach(dice => {
       const change = false;
-      receiveDices.push({ dice, change });
+      receiveDices.push({dice, change});
     });
 
     this.holdDices = [];

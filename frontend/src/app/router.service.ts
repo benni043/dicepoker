@@ -109,6 +109,7 @@ export class RouterService {
 
     this.socket.on("newDices", (res: ThrowRes) => {
       this.dices = res.newDices.dices;
+      // this.rollDice(this.dices);
       this.holdDices = res.newDices.holdDices;
       this.movesLeft = res.moves;
 
@@ -185,6 +186,39 @@ export class RouterService {
     })
   }
 
+  // rollDice(dices: number[]) {
+  //   this.blockDice = true;
+  //
+  //   let animationSteps: number[][] = [
+  //     [0, 1, 2, 3, 4, 5],   // Animationsschritte für Würfel 1
+  //     [3, 2, 1, 0, 5, 4],   // Animationsschritte für Würfel 2
+  //     [1, 3, 0, 4, 2, 5],   // Animationsschritte für Würfel 3
+  //     [4, 0, 5, 1, 3, 2],   // Animationsschritte für Würfel 4
+  //     [2, 5, 3, 4, 0, 1]    // Animationsschritte für Würfel 5
+  //   ];
+  //
+  //   let shuffleCount: number = 4;
+  //   let delay: number = 600;
+  //
+  //   for (let i = 0; i < dices.length; i++) {
+  //     let diceIndex = dices[i] - 1; // Index für die Animationsschritte basierend auf dem aktuellen Würfelwert
+  //     let origDice = dices[i]; // Store the original value of the current dice
+  //
+  //     for (let j = 0; j < shuffleCount; j++) {
+  //       setTimeout(() => {
+  //         diceIndex = (diceIndex + 1) % 6; // Nächster Animationsschritt im Kreislauf
+  //         dices[i] = animationSteps[i][diceIndex]; // Wert des aktuellen Animationsschritts für den Würfel
+  //       }, (j + 1) * delay); // Adjust the delay to increase with each iteration
+  //     }
+  //   }
+  //
+  //   setTimeout(() => {
+  //     this.blockDice = false;
+  //     console.log('Animation beendet'); // Logge, wenn die Animation abgeschlossen ist
+  //   }, (shuffleCount + 1) * delay);
+  // }
+
+
   sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
     const sortedArray = Array.from(map.entries()).sort(([key1], [key2]) => key1.localeCompare(key2));
     const sortedMap = new Map(sortedArray);
@@ -210,6 +244,7 @@ export class RouterService {
 
   activePlayer: string = "";
   winner: string = "";
+  blockDice: boolean = false;
 
   playerName: string = "";
   serverName: number = 0;

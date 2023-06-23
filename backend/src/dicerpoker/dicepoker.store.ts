@@ -321,7 +321,7 @@ export class DicepokerStore {
         }
 
         // Poker
-        if (uniqueDiceCount === 2 && (diceCounts.some(count => count === 4))) {
+        if (uniqueDiceCount === 2 && (diceCounts.some(count => count >= 4))) {
             player.holdDices.length == 0 ? setPoints.poker = 45 : setPoints.poker = 40;
         }
 

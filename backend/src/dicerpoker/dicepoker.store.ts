@@ -15,11 +15,11 @@ export class DicepokerStore {
 
     private game: Map<number, Game> = new Map();
 
-    join(standardGameData: StandardGameData, ws: Socket): void {
+    join(standardGameData: StandardGameData, ws: Socket, playerCount: number): void {
         if (!this.game.has(standardGameData.serverName)) {
-            this.game.set(standardGameData.serverName, {
-                player1: {
-                    playerName: standardGameData.playerName,
+            let players = [];
+            let p1 = {
+                playerName: standardGameData.playerName,
                     isOnline: true,
                     dices: [],
                     holdDices: [],
@@ -28,7 +28,7 @@ export class DicepokerStore {
                     socket: ws,
                     isOnMove: false,
                     pointsField: {
-                        ones: -1,
+                    ones: -1,
                         twos: -1,
                         threes: -1,
                         fours: -1,
@@ -40,24 +40,28 @@ export class DicepokerStore {
                         grande: -1,
                         doubleGrande: -1,
                         sum: 0
-                    },
-                    pointsFieldTMP: {
-                        ones: -1,
-                        twos: -1,
-                        threes: -1,
-                        fours: -1,
-                        fives: -1,
-                        sixes: -1,
-                        fullHouse: -1,
-                        street: -1,
-                        poker: -1,
-                        grande: -1,
-                        doubleGrande: -1,
-                        sum: 0
-                    }
                 },
-                player2: {
-                    playerName: "",
+                pointsFieldTMP: {
+                    ones: -1,
+                        twos: -1,
+                        threes: -1,
+                        fours: -1,
+                        fives: -1,
+                        sixes: -1,
+                        fullHouse: -1,
+                        street: -1,
+                        poker: -1,
+                        grande: -1,
+                        doubleGrande: -1,
+                        sum: 0
+                }
+            };
+
+            players.push(p1);
+
+            for (let i = 0; i < playerCount-1; i++) {
+                let player =  {
+                    playerName: "joining" + i,
                     isOnline: false,
                     dices: [],
                     holdDices: [],
@@ -93,24 +97,59 @@ export class DicepokerStore {
                         doubleGrande: -1,
                         sum: 0
                     }
-                },
+                }
+
+                players.push(player);
+            }
+
+            this.game.set(standardGameData.serverName, {
+                players: players,
                 state: GameState.joining,
-                numberOfPlayersWhoLeft: 0
+                numberOfPlayersWhoLeft: 0,
+                numberOfPlayersJoined: 1
             });
         } else {
-            this.game.get(standardGameData.serverName)!.state = GameState.running;
+            let game = this.game.get(standardGameData.serverName)!;
+            game.numberOfPlayersJoined++;
 
-            this.game.get(standardGameData.serverName)!.player1.isOnMove = true;
+            game.players[game.numberOfPlayersJoined-1].playerName = standardGameData.playerName;
+            game.players[game.numberOfPlayersJoined-1].isOnline = true
+            game.players[game.numberOfPlayersJoined-1].socket = ws;
 
-            this.game.get(standardGameData.serverName)!.player2.playerName = standardGameData.playerName;
-            this.game.get(standardGameData.serverName)!.player2.isOnline = true;
-            this.game.get(standardGameData.serverName)!.player2.socket = ws;
+            if (game.numberOfPlayersJoined == game.players.length) {
+                game.state = GameState.running;
+                game.players[0].isOnMove = true;
+            }
         }
     }
 
+    getPlayer(serverName: number, playerName: string) {
+        let game = this.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return null
+        else {
+            let players = this.getPlayers(serverName);
+
+            for (let player of players) {
+                if (player.playerName == playerName) {
+                    return player;
+                }
+            }
+        }
+    }
+
+    getPlayers(serverName: number): Player[] {
+        let game = this.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return []
+        else {
+            return game.players;
+        }
+    } //finish
+
     rejoin(serverName: number, playerName: string, ws: Socket) {
         let game = this.game.get(serverName)!;
-        let player = game.player1.playerName == playerName ? game.player1 : game.player2;
+        let player = this.getPlayer(serverName, playerName)!;
 
         player.isOnline = true;
         game.numberOfPlayersWhoLeft--;
@@ -121,7 +160,7 @@ export class DicepokerStore {
         let newDices = []
         let holdDices = []
 
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let player = this.getPlayer(serverName, playerName)!;
 
         for (let receiveDice of receiveDices) {
             if (receiveDice.change) {
@@ -140,9 +179,22 @@ export class DicepokerStore {
         this.game.get(serverName)!.state = GameState.finished;
     } //finish
 
+    getIndexToPlayer(players: Player[], playerName: string) {
+        for (let i = 0; i < players.length; i++) {
+            if (players[i].playerName == playerName) return i;
+        }
+        return -1;
+    }
+
+    getNextValue(players: Player[], player: Player) {
+        const currentIndex = players.indexOf(player);
+        const nextIndex = (currentIndex + 1) % players.length; // Verwendet den Modulo-Operator, um sicherzustellen, dass der Index innerhalb der Array-Grenzen bleibt
+        return players[nextIndex];
+    }
+
     setField(playerName: string, serverName: number, field: string): void {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName != playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let player = this.getPlayer(serverName, playerName)!;
+        let opponent = this.getNextValue(this.getPlayers(serverName), player);
 
         switch (field) {
             case "ones": {
@@ -225,8 +277,23 @@ export class DicepokerStore {
         }
     } //finish
 
+    getActivePlayer(serverName: number) {
+        let game = this.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return undefined;
+        else {
+            let players = this.getPlayers(serverName);
+
+            for (let player of players) {
+                if (player.isOnMove) {
+                    return player;
+                }
+            }
+        }
+    }
+
     getPlayersField(playerName: string, serverName: number): Map<string, PointsField> {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let player = this.getActivePlayer(serverName)!;
 
         let map: Map<string, PointsField> = new Map();
 
@@ -236,19 +303,19 @@ export class DicepokerStore {
     } //finish
 
     getSumField(playerName: string, serverName: number): Map<string, PointsField> {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
-        let opponent = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player2 : this.game.get(serverName)!.player1;
+        let players = this.getPlayers(serverName);
 
         let map: Map<string, PointsField> = new Map();
 
-        map.set(player.playerName, player.pointsField);
-        map.set(opponent.playerName, opponent.pointsField);
+        for (let player of players) {
+            map.set(player.playerName, player.pointsField)
+        }
 
         return map;
     } //finish
 
     private setPlayerSettings(serverName: number, playerName: string, dices: Dice[], holdDices: Dice[]): void {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let player = this.getActivePlayer(serverName)!;
 
         player.dices = dices;
         player.holdDices = holdDices;
@@ -339,13 +406,11 @@ export class DicepokerStore {
     } //finish
 
     disconnect(playerName: string, serverName: number) {
-        let player = this.game.get(serverName)!.player1.playerName == playerName ? this.game.get(serverName)!.player1 : this.game.get(serverName)!.player2;
+        let player = this.getPlayer(serverName, playerName)!;
         let game = this.game.get(serverName)!;
 
         game.numberOfPlayersWhoLeft++;
         player.isOnline = false;
-
-        console.log(game.numberOfPlayersWhoLeft)
 
         if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
             this.game.delete(serverName);

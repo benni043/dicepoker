@@ -42,7 +42,7 @@ export class DicepokerService {
             return ReturnEnum.illegalPlayerErr
         }
 
-        this.dicerpokerStore.join(standardGameData, ws);
+        this.dicerpokerStore.join(standardGameData, ws, 3);
         return ReturnEnum.joinSuccess
     }
 
@@ -51,38 +51,41 @@ export class DicepokerService {
 
         if (game == GameNotExists.gameNotExistsError) return GameNotExists.gameNotExistsError;
         else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-            let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
+            let me = this.getPlayer(serverName, playerName)!;
+            let activePlayer = this.getActivePlayer(serverName)!;
 
-            if (player.isOnMove && player.movesLeft > 0) {
+            // let player = game.player1.playerName == playerName ? game.player1 : game.player2;
+            // let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
+
+            if (me.isOnMove && me.movesLeft > 0) {
                 return {
                     type: RejoinType.dice,
-                    dices: player.dices,
-                    holdDices: player.holdDices,
+                    dices: me.dices,
+                    holdDices: me.holdDices,
                     playerField: null,
                     sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
-                    actPlayer: player.playerName,
-                    moves: player.movesLeft,
+                    actPlayer: me.playerName,
+                    moves: me.movesLeft,
                 };
-            } else if (player.isOnMove && player.movesLeft == 0) {
+            } else if (me.isOnMove && me.movesLeft == 0) {
                 return {
                     type: RejoinType.playerField,
-                    dices: player.dices,
-                    holdDices: player.holdDices,
+                    dices: me.dices,
+                    holdDices: me.holdDices,
                     playerField: JSON.stringify(Array.from(this.dicerpokerStore.getPlayersField(playerName, serverName).entries())),
                     sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
-                    actPlayer: player.playerName,
-                    moves: player.movesLeft,
+                    actPlayer: me.playerName,
+                    moves: me.movesLeft,
                 };
             } else {
                 return {
                     type: RejoinType.sumField,
-                    dices: opponent.dices,
-                    holdDices: player.holdDices,
+                    dices: activePlayer.dices,
+                    holdDices: activePlayer.holdDices,
                     playerField: null,
                     sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
-                    actPlayer: opponent.playerName,
-                    moves: opponent.movesLeft,
+                    actPlayer: activePlayer.playerName,
+                    moves: activePlayer.movesLeft,
                 };
             }
         }
@@ -234,24 +237,34 @@ export class DicepokerService {
         let game = this.dicerpokerStore.getGame(serverName);
 
         if (game == GameNotExists.gameNotExistsError) return false
-        else return game.player1.playerName == playerName || game.player2.playerName == playerName;
+        else {
+            let players = this.getPlayers(serverName);
+
+            for (let player of players) {
+                if (player.playerName == playerName) return true;
+            }
+        }
+        return false;
     } //finish
     checkIfPlayerIsOnTurn(serverName: number, playerName: string): boolean {
         let game = this.dicerpokerStore.getGame(serverName);
 
         if (game == GameNotExists.gameNotExistsError) return false
         else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
+            let players = this.getPlayers(serverName);
 
-            return player.isOnMove;
+            for (let player of players) {
+                if (player.isOnMove) return true;
+            }
         }
+        return false;
     } //finish
     checkIfFieldFree(playerName: string, serverName: number, field: string): boolean {
         let game = this.dicerpokerStore.getGame(serverName);
 
         if (game == GameNotExists.gameNotExistsError) return false
 
-        let player = game.player1.playerName == playerName ? game.player1 : game.player2;
+        let player = this.getActivePlayer(serverName)!;
 
         switch (field) {
             case "ones": {
@@ -301,6 +314,7 @@ export class DicepokerService {
         }
         return true;
     }
+
     checkIfGameEnd(players: Player[]) {
         for (let player of players) {
             for (const [key, value] of Object.entries(player.pointsField)) {
@@ -325,7 +339,7 @@ export class DicepokerService {
 
         if (game == GameNotExists.gameNotExistsError) return []
         else {
-            return [game.player1, game.player2]
+            return game.players;
         }
     } //finish
     getPlayer(serverName: number, playerName: string) {
@@ -333,7 +347,13 @@ export class DicepokerService {
 
         if (game == GameNotExists.gameNotExistsError) return null
         else {
-            return game.player1.playerName == playerName ? game.player1 : game.player2;
+            let players = this.getPlayers(serverName);
+
+            for (let player of players) {
+                if (player.playerName == playerName) {
+                    return player;
+                }
+            }
         }
     } //finish
     getPlayerMoves(serverName: number, playerName: string): number {
@@ -341,7 +361,7 @@ export class DicepokerService {
 
         if (game == GameNotExists.gameNotExistsError) return 0
         else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
+            let player = this.getPlayer(serverName, playerName)!;
 
             return player.movesLeft;
         }
@@ -351,13 +371,13 @@ export class DicepokerService {
 
         if (game == GameNotExists.gameNotExistsError) return new Map<string, PointsField>()
         else {
-            let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-            let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
+            let players = this.getPlayers(serverName);
 
             let map: Map<string, PointsField> = new Map();
 
-            map.set(player.playerName, player.pointsField);
-            map.set(opponent.playerName, opponent.pointsField);
+            for (let player of players) {
+                map.set(player.playerName, player.pointsField)
+            }
 
             return map;
         }
@@ -380,6 +400,21 @@ export class DicepokerService {
             }
 
             return winner;
+        }
+    }
+
+    getActivePlayer(serverName: number) {
+        let game = this.dicerpokerStore.getGame(serverName);
+
+        if (game == GameNotExists.gameNotExistsError) return undefined;
+        else {
+            let players = this.getPlayers(serverName);
+
+            for (let player of players) {
+                if (player.isOnMove) {
+                    return player;
+                }
+            }
         }
     }
 }

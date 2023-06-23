@@ -1,10 +1,10 @@
 import {Socket} from "socket.io";
 
 export type Game = {
-  player1: Player,
-  player2: Player,
+  players: Player[],
   state: GameState,
-  numberOfPlayersWhoLeft: number
+  numberOfPlayersWhoLeft: number,
+  numberOfPlayersJoined: number,
 }
 
 export type Player = {
@@ -117,6 +117,11 @@ export enum RejoinType {
 export type StandardGameData = {
   serverName: number,
   playerName: string,
+}
+
+export type createData = {
+  serverName: string,
+  playerCount: number
 }
 
 export type ChangeDiceObject = {

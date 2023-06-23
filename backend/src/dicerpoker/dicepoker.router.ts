@@ -40,7 +40,11 @@ export class DicepokerRouter {
 
         this.socketIO.on("connection", (ws) => {
             let playerName: string
-            let serverName: number
+            let serverName: string
+
+            ws.on("createGame", () => {
+
+            })
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
                 let res = this.dicepokerService.routerJoin(standardGameData, ws);

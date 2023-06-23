@@ -115,8 +115,13 @@ export enum RejoinType {
 
 
 export type StandardGameData = {
-    serverName: number,
+    serverName: string,
     playerName: string,
+}
+
+export type CreateData = {
+    serverName: string,
+    playerCount: number
 }
 
 export type ChangeDiceObject = {

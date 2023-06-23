@@ -1,1 +1,44 @@
-<p>create works!</p>
+<div class="center">
+  <form #create="ngForm" (ngSubmit)="createServer()">
+    <h1>Spiel erstellen!</h1>
+
+    <div>
+      <div class="flex">
+        <div class="txt_field">
+          <input type="text" name="serverName" id="serverName" [(ngModel)]="serverName" #server="ngModel" required
+                 pattern="^[a-zA-Z0-9._]+$" [ngClass]="{'has-value': serverName != ''}">
+          <span></span>
+          <label>Servername:</label>
+        </div>
+        <div *ngIf="server.hasError('required') && server.touched">
+          <span class="error" matTooltip="Sie müssen einen Servernamen angeben!"
+                matTooltipClass="custom-tooltip"
+                matTooltipPosition="below">&#9888;
+          </span>
+        </div>
+        <div *ngIf="server.hasError('pattern')">
+          <span class="error" matTooltip="Dieser Servername ist nicht erlaubt!"
+                matTooltipClass="custom-tooltip"
+                matTooltipPosition="below">&#9888;
+          </span>
+        </div>
+      </div>
+
+      <div class="flex">
+        <div class="txt_field">
+          <input type="number" name="playerCount" id="playerCount" [(ngModel)]="playerCount" #pc="ngModel" required  [ngClass]="{'has-value': playerCount != null}">
+          <span></span>
+          <label>Spieleranzahl:</label>
+        </div>
+        <div *ngIf="pc.hasError('required') && pc.touched">
+          <span class="error" matTooltip="Sie müssen ein Passwort angeben!"
+                matTooltipClass="custom-tooltip"
+                matTooltipPosition="below">&#9888;
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit" [disabled]="create.invalid">Spiel erstellen</button>
+  </form>
+</div>

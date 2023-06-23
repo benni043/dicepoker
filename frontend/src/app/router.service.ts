@@ -270,6 +270,10 @@ export class RouterService {
     this.socket.emit("joinToGame", {serverName: serverName, playerName: playerName});
   }
 
+  create(serverName: string, playerCount: number) {
+
+  }
+
   sendValue(elem: string) {
     this.socket.emit("setField", {
       field: elem,

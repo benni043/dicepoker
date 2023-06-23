@@ -4,6 +4,7 @@ import * as http from "http";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
+    CreateData,
     End,
     GameNotExists,
     GetError,
@@ -42,8 +43,15 @@ export class DicepokerRouter {
             let playerName: string
             let serverName: string
 
-            ws.on("createGame", () => {
+            ws.on("getAllGames", () => {
+                console.log(this.dicepokerService.getAllGames())
+                ws.emit("getGames", JSON.stringify(Array.from(this.dicepokerService.getAllGames().entries())))
+            })
 
+            ws.on("createGame", (createGameData: CreateData) => {
+                this.dicepokerService.createGame(createGameData);
+
+                ws.emit("getGames", JSON.stringify(Array.from(this.dicepokerService.getAllGames().entries())))
             })
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
@@ -165,7 +173,10 @@ export class DicepokerRouter {
                     let winner = this.dicepokerService.getWinner(serverName, playerName);
 
                     for (let player of players) {
-                        player.socket!.emit("end", {sumField: JSON.stringify(Array.from(sumField.entries())), winner: winner} as End);
+                        player.socket!.emit("end", {
+                            sumField: JSON.stringify(Array.from(sumField.entries())),
+                            winner: winner
+                        } as End);
                     }
                 }
             }) //finish

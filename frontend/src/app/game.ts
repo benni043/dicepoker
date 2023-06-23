@@ -115,11 +115,11 @@ export enum RejoinType {
 
 
 export type StandardGameData = {
-  serverName: number,
+  serverName: string,
   playerName: string,
 }
 
-export type createData = {
+export type CreateData = {
   serverName: string,
   playerCount: number
 }

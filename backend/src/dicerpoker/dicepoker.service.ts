@@ -1,6 +1,7 @@
 import {DicepokerStore} from "./dicepoker.store";
 import {
-    ChangeDiceObject, CreateData,
+    ChangeDiceObject,
+    CreateData,
     Dice,
     GameNotExists,
     GameState,
@@ -21,11 +22,15 @@ export class DicepokerService {
 
     private dicerpokerStore: DicepokerStore = new DicepokerStore();
 
+    getAllGames() {
+        return this.dicerpokerStore.getAllGames();
+    }
+
     createGame(createData: CreateData) {
         let game = this.dicerpokerStore.getAllGames();
 
         if (!game.has(createData.serverName)) {
-
+            this.dicerpokerStore.create(createData);
         }
     }
 
@@ -50,8 +55,13 @@ export class DicepokerService {
             return ReturnEnum.illegalPlayerErr
         }
 
-        this.dicerpokerStore.join(standardGameData, ws, 3);
-        return ReturnEnum.joinSuccess
+        if (this.dicerpokerStore.getAllGames().has(standardGameData.serverName)) {
+            this.dicerpokerStore.join(standardGameData, ws);
+            return ReturnEnum.joinSuccess;
+        }
+
+        console.log("error")
+        return ReturnEnum.gameFullErr//todo invalid
     }
 
     getRejoinData(serverName: string, playerName: string): GameNotExists | RejoinData {

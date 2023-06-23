@@ -7,14 +7,21 @@ import {RouterService} from "../router.service";
   styleUrls: ['./join.component.scss']
 })
 export class JoinComponent {
+  playerName: string = "";
+  serverName: string = "";
 
-  constructor(private routerService: RouterService) {
+  constructor(public routerService: RouterService) {
   }
 
-  serverName: number = 0;
-  playerName: string = "";
 
   join() {
+    console.log(this.playerName)
+    console.log(this.serverName)
     this.routerService.join(this.playerName, this.serverName);
   }
+
+  makeList() {
+    return Array.from(this.routerService.game.keys());
+  }
+
 }

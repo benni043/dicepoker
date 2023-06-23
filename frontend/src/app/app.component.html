@@ -3,6 +3,7 @@
 </div>
 
 <div>
+  <app-create *ngIf="!routerService.joined"></app-create>
   <app-join *ngIf="!routerService.joined"></app-join>
 </div>
 

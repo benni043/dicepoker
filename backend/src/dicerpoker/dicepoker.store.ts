@@ -74,111 +74,17 @@ export class DicepokerStore {
         })
     }
 
-    join(standardGameData: StandardGameData, ws: Socket, playerCount: number): void {
-        if (!this.game.has(standardGameData.serverName)) {
-            let players = [];
-            let p1 = {
-                playerName: standardGameData.playerName,
-                isOnline: true,
-                dices: [],
-                holdDices: [],
-                movesLeft: 3,
-                points: 0,
-                socket: ws,
-                isOnMove: false,
-                pointsField: {
-                    ones: -1,
-                    twos: -1,
-                    threes: -1,
-                    fours: -1,
-                    fives: -1,
-                    sixes: -1,
-                    fullHouse: -1,
-                    street: -1,
-                    poker: -1,
-                    grande: -1,
-                    doubleGrande: -1,
-                    sum: 0
-                },
-                pointsFieldTMP: {
-                    ones: -1,
-                    twos: -1,
-                    threes: -1,
-                    fours: -1,
-                    fives: -1,
-                    sixes: -1,
-                    fullHouse: -1,
-                    street: -1,
-                    poker: -1,
-                    grande: -1,
-                    doubleGrande: -1,
-                    sum: 0
-                }
-            };
+    join(standardGameData: StandardGameData, ws: Socket): void {
+        let game = this.game.get(standardGameData.serverName)!;
+        game.numberOfPlayersJoined++;
 
-            players.push(p1);
+        game.players[game.numberOfPlayersJoined - 1].playerName = standardGameData.playerName;
+        game.players[game.numberOfPlayersJoined - 1].isOnline = true
+        game.players[game.numberOfPlayersJoined - 1].socket = ws;
 
-            for (let i = 0; i < playerCount - 1; i++) {
-                let player = {
-                    playerName: "joining" + i,
-                    isOnline: false,
-                    dices: [],
-                    holdDices: [],
-                    movesLeft: 3,
-                    points: 0,
-                    socket: undefined,
-                    isOnMove: false,
-                    pointsField: {
-                        ones: -1,
-                        twos: -1,
-                        threes: -1,
-                        fours: -1,
-                        fives: -1,
-                        sixes: -1,
-                        fullHouse: -1,
-                        street: -1,
-                        poker: -1,
-                        grande: -1,
-                        doubleGrande: -1,
-                        sum: 0
-                    },
-                    pointsFieldTMP: {
-                        ones: -1,
-                        twos: -1,
-                        threes: -1,
-                        fours: -1,
-                        fives: -1,
-                        sixes: -1,
-                        fullHouse: -1,
-                        street: -1,
-                        poker: -1,
-                        grande: -1,
-                        doubleGrande: -1,
-                        sum: 0
-                    }
-                }
-
-                players.push(player);
-            }
-
-            this.game.set(standardGameData.serverName, {
-                players: players,
-                state: GameState.joining,
-                numberOfPlayersWhoLeft: 0,
-                numberOfPlayersJoined: 1
-            });
-        } else {
-            let game = this.game.get(standardGameData.serverName)!;
-            game.numberOfPlayersJoined++;
-
-            game.players[game.numberOfPlayersJoined - 1].playerName = standardGameData.playerName;
-            game.players[game.numberOfPlayersJoined - 1].isOnline = true
-            game.players[game.numberOfPlayersJoined - 1].socket = ws;
-
-            if (game.numberOfPlayersJoined == game.players.length) {
-                game.state = GameState.running;
-                game.players[0].isOnMove = true;
-            }
+        if (game.numberOfPlayersJoined == game.players.length) {
+            game.state = GameState.running;
+            game.players[0].isOnMove = true;
         }
     }
 

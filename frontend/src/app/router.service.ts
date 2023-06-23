@@ -3,7 +3,9 @@ import {connect, Socket} from "socket.io-client";
 import {environment} from "../environments/environment";
 import {
   ChangeDiceObject,
-  Dice, End,
+  Dice,
+  End,
+  Game,
   NewDices,
   PointsField,
   RejoinData,
@@ -29,6 +31,8 @@ export class RouterService {
 
   constructor() {
     this.socket = connect(environment.apiURL);
+
+    this.socket.emit("getAllGames");
 
     this.socket.on("gameFullErr", () => {
       this.error("Das Spiel ist voll!");
@@ -183,6 +187,10 @@ export class RouterService {
     this.socket.on("switched", (newDices: NewDices) => {
       this.dices = newDices.dices;
       this.holdDices = newDices.holdDices;
+    });
+
+    this.socket.on("getGames", (games) => {
+      this.game = new Map(JSON.parse(games));
     })
   }
 
@@ -247,7 +255,7 @@ export class RouterService {
   blockDice: boolean = false;
 
   playerName: string = "";
-  serverName: number = 0;
+  serverName: string = "";
 
   bools: boolean[] = [];
 
@@ -263,7 +271,9 @@ export class RouterService {
 
   firstMove: boolean = true;
 
-  join(playerName: string, serverName: number) {
+  game: Map<string, Game> = new Map();
+
+  join(playerName: string, serverName: string) {
     this.playerName = playerName;
     this.serverName = serverName;
 
@@ -271,7 +281,7 @@ export class RouterService {
   }
 
   create(serverName: string, playerCount: number) {
-
+    this.socket.emit("createGame", {serverName: serverName, playerCount: playerCount});
   }
 
   sendValue(elem: string) {

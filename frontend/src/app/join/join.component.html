@@ -1,44 +1,9 @@
-<div class="center">
-  <form #loginForm="ngForm" (ngSubmit)="join()">
-    <h1>Spiel beitreten</h1>
+<div>
+  <input type="text" name="playerName" id="playerName" placeholder="playerName" [(ngModel)]="playerName">
 
-    <div>
-      <div class="flex">
-        <div class="txt_field">
-          <input type="text" name="playerName" id="playerName" [(ngModel)]="playerName" #player="ngModel" required
-                 pattern="^[a-zA-Z0-9._]+$" [ngClass]="{'has-value': playerName != ''}">
-          <span></span>
-          <label>Spielername:</label>
-        </div>
-        <div *ngIf="player.hasError('required') && player.touched">
-          <span class="error" matTooltip="Sie müssen einen Benutzernamen angeben!"
-                matTooltipClass="custom-tooltip"
-                matTooltipPosition="below">&#9888;
-          </span>
-        </div>
-        <div *ngIf="player.hasError('pattern')">
-          <span class="error" matTooltip="Dieser Benutzername ist nicht erlaubt!"
-                matTooltipClass="custom-tooltip"
-                matTooltipPosition="below">&#9888;
-          </span>
-        </div>
-      </div>
+  <select name="game" [(ngModel)]="serverName">
+    <option [value]="game" *ngFor="let game of makeList()">{{game}}</option>
+  </select>
 
-      <div class="flex">
-        <div class="txt_field">
-          <input type="number" name="serverName" id="serverName" [(ngModel)]="serverName" #sv="ngModel" required  [ngClass]="{'has-value': serverName != null}">
-          <span></span>
-          <label>Servername:</label>
-        </div>
-        <div *ngIf="sv.hasError('required') && sv.touched">
-          <span class="error" matTooltip="Sie müssen ein Passwort angeben!"
-                matTooltipClass="custom-tooltip"
-                matTooltipPosition="below">&#9888;
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <button type="submit" [disabled]="loginForm.invalid">Spiel beitreten</button>
-  </form>
+  <button (click)="join()">join</button>
 </div>

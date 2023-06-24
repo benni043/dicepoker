@@ -20,8 +20,4 @@ export class JoinComponent {
     this.routerService.join(this.playerName, this.serverName);
   }
 
-  makeList() {
-    return Array.from(this.routerService.game.keys());
-  }
-
 }

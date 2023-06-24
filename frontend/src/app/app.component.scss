@@ -1,41 +1,66 @@
-.game {
+//.game {
+//  display: flex;
+//  flex-direction: row;
+//  justify-content: left;
+//  align-items: center;
+//}
+//
+//.dice {
+//  display: flex;
+//  flex-direction: row;
+//  justify-content: center;
+//  align-items: center;
+//}
+//
+//app-dice-display {
+//  margin: 100px;
+//}
+//
+//app-alert {
+//  position: absolute;
+//  right: 0;
+//  top: 0;
+//}
+//
+//h2 {
+//  margin: 5px;
+//}
+//
+//.data {
+//  display: flex;
+//  flex-direction: column;
+//}
+//
+//@media (max-width: 800px) {
+//  .game {
+//    display: flex;
+//    flex-direction: column;
+//    justify-content: space-around;
+//    align-items: center;
+//  }
+//
+//  app-dice-display {
+//    margin: 30px;
+//  }
+//}
+.container {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-
-app-dice-display {
-  margin: 100px;
-}
-
-app-alert {
-  position: absolute;
-  right: 0;
-  top: 0;
-}
-
-h2 {
-  margin: 5px;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .data {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-  margin-bottom: 30px;
+  align-self: flex-start;
 }
 
-@media (max-width: 800px) {
-  .game {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-around;
-    align-items: center;
-  }
+.game {
+  display: flex;
+  justify-content: flex-start;
+}
 
-  app-dice-display {
-    margin: 30px;
-  }
+.dice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

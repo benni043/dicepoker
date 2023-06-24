@@ -27,7 +27,7 @@ export class DicepokerService {
     }
 
     createGame(createData: CreateData) {
-        let game = this.dicerpokerStore.getAllGames();
+        let game = this.dicerpokerStore.gameGetter();
 
         if (!game.has(createData.serverName)) {
             this.dicerpokerStore.create(createData);
@@ -55,7 +55,7 @@ export class DicepokerService {
             return ReturnEnum.illegalPlayerErr
         }
 
-        if (this.dicerpokerStore.getAllGames().has(standardGameData.serverName)) {
+        if (this.dicerpokerStore.gameGetter().has(standardGameData.serverName)) {
             this.dicerpokerStore.join(standardGameData, ws);
             return ReturnEnum.joinSuccess;
         }

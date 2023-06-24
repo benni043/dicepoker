@@ -2,7 +2,7 @@
   <input type="text" name="playerName" id="playerName" placeholder="playerName" [(ngModel)]="playerName">
 
   <select name="game" [(ngModel)]="serverName">
-    <option [value]="game" *ngFor="let game of makeList()">{{game}}</option>
+    <option [value]="game" *ngFor="let game of routerService.games">{{game}}</option>
   </select>
 
   <button (click)="join()">join</button>

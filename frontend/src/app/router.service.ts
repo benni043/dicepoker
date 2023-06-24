@@ -80,6 +80,7 @@ export class RouterService {
         playerName: this.playerName
       } as StandardGameData)
     })
+
     this.socket.on("rejoin", (rejoinData: RejoinData) => {
       console.log("rejoin");
 
@@ -113,7 +114,6 @@ export class RouterService {
 
     this.socket.on("newDices", (res: ThrowRes) => {
       this.dices = res.newDices.dices;
-      // this.rollDice(this.dices);
       this.holdDices = res.newDices.holdDices;
       this.movesLeft = res.moves;
 
@@ -129,6 +129,9 @@ export class RouterService {
 
     this.socket.on("setPlayersField", (playersField: string) => {
       let map: Map<string, PointsField> = new Map(JSON.parse(playersField));
+
+      if (!map.has(this.playerName)) return;
+
       map.get(this.playerName)!.sum! = this.sumField!.get(this.playerName)?.sum!;
       let name = map.entries().next().value[0];
 
@@ -190,61 +193,8 @@ export class RouterService {
     });
 
     this.socket.on("getGames", (games) => {
-      this.game = new Map(JSON.parse(games));
+      this.games = games;
     })
-  }
-
-  // rollDice(dices: number[]) {
-  //   this.blockDice = true;
-  //
-  //   let animationSteps: number[][] = [
-  //     [0, 1, 2, 3, 4, 5],   // Animationsschritte für Würfel 1
-  //     [3, 2, 1, 0, 5, 4],   // Animationsschritte für Würfel 2
-  //     [1, 3, 0, 4, 2, 5],   // Animationsschritte für Würfel 3
-  //     [4, 0, 5, 1, 3, 2],   // Animationsschritte für Würfel 4
-  //     [2, 5, 3, 4, 0, 1]    // Animationsschritte für Würfel 5
-  //   ];
-  //
-  //   let shuffleCount: number = 4;
-  //   let delay: number = 600;
-  //
-  //   for (let i = 0; i < dices.length; i++) {
-  //     let diceIndex = dices[i] - 1; // Index für die Animationsschritte basierend auf dem aktuellen Würfelwert
-  //     let origDice = dices[i]; // Store the original value of the current dice
-  //
-  //     for (let j = 0; j < shuffleCount; j++) {
-  //       setTimeout(() => {
-  //         diceIndex = (diceIndex + 1) % 6; // Nächster Animationsschritt im Kreislauf
-  //         dices[i] = animationSteps[i][diceIndex]; // Wert des aktuellen Animationsschritts für den Würfel
-  //       }, (j + 1) * delay); // Adjust the delay to increase with each iteration
-  //     }
-  //   }
-  //
-  //   setTimeout(() => {
-  //     this.blockDice = false;
-  //     console.log('Animation beendet'); // Logge, wenn die Animation abgeschlossen ist
-  //   }, (shuffleCount + 1) * delay);
-  // }
-
-
-  sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
-    const sortedArray = Array.from(map.entries()).sort(([key1], [key2]) => key1.localeCompare(key2));
-    const sortedMap = new Map(sortedArray);
-    return sortedMap
-  }
-
-  fillBools(sumField: Map<string, PointsField>, name: string) {
-    let bools: boolean[] = []
-
-    for (const [key, value] of Object.entries(sumField?.get(name)!)) {
-      if (value == -1) {
-        bools.push(true);
-      } else {
-        bools.push(false);
-      }
-    }
-
-    return bools;
   }
 
   socket!: Socket;
@@ -252,7 +202,6 @@ export class RouterService {
 
   activePlayer: string = "";
   winner: string = "";
-  blockDice: boolean = false;
 
   playerName: string = "";
   serverName: string = "";
@@ -271,7 +220,26 @@ export class RouterService {
 
   firstMove: boolean = true;
 
-  game: Map<string, Game> = new Map();
+  games: string[] = [];
+
+  sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
+    const sortedArray = Array.from(map.entries()).sort(([key1], [key2]) => key1.localeCompare(key2));
+    const sortedMap = new Map(sortedArray);
+    return sortedMap
+  }
+  fillBools(sumField: Map<string, PointsField>, name: string) {
+    let bools: boolean[] = []
+
+    for (const [key, value] of Object.entries(sumField?.get(name)!)) {
+      if (value == -1) {
+        bools.push(true);
+      } else {
+        bools.push(false);
+      }
+    }
+
+    return bools;
+  }
 
   join(playerName: string, serverName: string) {
     this.playerName = playerName;
@@ -299,6 +267,7 @@ export class RouterService {
       serverName: this.serverName
     } as StandardGameData));
   }
+
   switched(dices: Dice[], holdDices: Dice[]) {
     this.socket.emit("switched", {
       newDices: {dices: dices, holdDices: holdDices},
@@ -332,5 +301,4 @@ export class RouterService {
 
     this.firstMove = false;
   }
-
 }

@@ -16,8 +16,18 @@ export class DicepokerStore {
 
     private game: Map<string, Game> = new Map();
 
-    getAllGames() {
+    gameGetter() {
         return this.game;
+    }
+
+    getAllGames() {
+        let games = [];
+
+        for (let key of this.game.keys()) {
+            games.push(key);
+        }
+
+        return games;
     }
 
     create(createData: CreateData) {

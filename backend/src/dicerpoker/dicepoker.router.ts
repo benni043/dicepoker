@@ -44,14 +44,13 @@ export class DicepokerRouter {
             let serverName: string
 
             ws.on("getAllGames", () => {
-                console.log(this.dicepokerService.getAllGames())
-                ws.emit("getGames", JSON.stringify(Array.from(this.dicepokerService.getAllGames().entries())))
+                this.socketIO.emit("getGames", this.dicepokerService.getAllGames())
             })
 
             ws.on("createGame", (createGameData: CreateData) => {
                 this.dicepokerService.createGame(createGameData);
 
-                ws.emit("getGames", JSON.stringify(Array.from(this.dicepokerService.getAllGames().entries())))
+                this.socketIO.emit("getGames", this.dicepokerService.getAllGames());
             })
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {

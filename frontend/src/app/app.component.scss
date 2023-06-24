@@ -1,66 +1,58 @@
-//.game {
-//  display: flex;
-//  flex-direction: row;
-//  justify-content: left;
-//  align-items: center;
-//}
-//
-//.dice {
-//  display: flex;
-//  flex-direction: row;
-//  justify-content: center;
-//  align-items: center;
-//}
-//
-//app-dice-display {
-//  margin: 100px;
-//}
-//
-//app-alert {
-//  position: absolute;
-//  right: 0;
-//  top: 0;
-//}
-//
-//h2 {
-//  margin: 5px;
-//}
-//
-//.data {
-//  display: flex;
-//  flex-direction: column;
-//}
-//
-//@media (max-width: 800px) {
-//  .game {
-//    display: flex;
-//    flex-direction: column;
-//    justify-content: space-around;
-//    align-items: center;
-//  }
-//
-//  app-dice-display {
-//    margin: 30px;
-//  }
-//}
-.container {
+.center {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-}
-
-.data {
-  align-self: flex-start;
-}
-
-.game {
-  display: flex;
-  justify-content: flex-start;
+  align-items: center;
+  height: 100vh;
+  margin-left: 50px;
 }
 
 .dice {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex: 1;
+
+  .data {
+    text-align: center;
+    margin-bottom: 10px;
+
+    h2 {
+      margin: 5px;
+    }
+  }
 }
+
+.field {
+  display: flex;
+}
+
+.leave {
+  width: 100px;
+  height: 50px;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  color: #e9f4fb;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: 0.5s;
+
+  &:not(:disabled) {
+    background: #f62f2f;
+  }
+
+  &:disabled {
+    background: #928e8e;
+  }
+
+  &:not(:disabled):hover {
+    background-color: #de0d0d;
+  }
+
+  position: absolute;
+  margin: 15px;
+  top: 0;
+  right: 0;
+}
+

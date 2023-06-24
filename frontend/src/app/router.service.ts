@@ -221,6 +221,11 @@ export class RouterService {
   firstMove: boolean = true;
 
   games: string[] = [];
+  newGame: boolean = false;
+
+  swap() {
+    this.newGame = !this.newGame;
+  }
 
   sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
     const sortedArray = Array.from(map.entries()).sort(([key1], [key2]) => key1.localeCompare(key2));
@@ -250,6 +255,7 @@ export class RouterService {
 
   create(serverName: string, playerCount: number) {
     this.socket.emit("createGame", {serverName: serverName, playerCount: playerCount});
+    this.swap();
   }
 
   sendValue(elem: string) {

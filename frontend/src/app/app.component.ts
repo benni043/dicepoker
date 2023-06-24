@@ -13,4 +13,9 @@ export class AppComponent {
   constructor(public routerService: RouterService) {
   }
 
+  newGame: boolean = false;
+
+  back() {
+
+  }
 }

@@ -1,9 +1,43 @@
 <div>
-  <input type="text" name="playerName" id="playerName" placeholder="playerName" [(ngModel)]="playerName">
+  <div class="outer">
+    <div class="games">
+      <button class="create" *ngIf="!routerService.joined" (click)="routerService.swap()">Spiel erstellen</button>
 
-  <select name="game" [(ngModel)]="serverName">
-    <option [value]="game" *ngFor="let game of routerService.games">{{game}}</option>
-  </select>
+      <h1>Server</h1>
+      <br>
+      <button *ngFor="let game of routerService.games" class="game" (click)="start(game)">{{game}}</button>
+    </div>
+  </div>
 
-  <button (click)="join()">join</button>
+  <div class="center" *ngIf="clicked">
+    <form #joinForm="ngForm" (ngSubmit)="join()">
+      <h1>Spiel beitreten!</h1>
+
+      <div>
+        <div class="flex">
+          <div class="txt_field">
+            <input type="text" name="playerName" id="playerName" [(ngModel)]="playerName" #server="ngModel" required
+                   pattern="^[a-zA-Z0-9._]+$" [ngClass]="{'has-value': playerName != ''}">
+            <span></span>
+            <label>Spielername:</label>
+          </div>
+          <div *ngIf="server.hasError('required') && server.touched">
+          <span class="error" matTooltip="Sie müssen einen Spielernamen angeben!"
+                matTooltipClass="custom-tooltip"
+                matTooltipPosition="below">&#9888;
+          </span>
+          </div>
+          <div *ngIf="server.hasError('pattern')">
+          <span class="error" matTooltip="Dieser Spielernamen ist nicht erlaubt!"
+                matTooltipClass="custom-tooltip"
+                matTooltipPosition="below">&#9888;
+          </span>
+          </div>
+        </div>
+
+      </div>
+
+      <button type="submit" [disabled]="joinForm.invalid">Spiel erstellen</button>
+    </form>
+  </div>
 </div>

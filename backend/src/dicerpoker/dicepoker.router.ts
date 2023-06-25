@@ -27,7 +27,7 @@ export class DicepokerRouter {
 
     app = express();
     server = http.createServer(this.app);
-    socketIO = new Server(this.server, {cors: {origin: true}});
+    socketIO = new Server(this.server, {cors: {origin: true}, pingInterval: 5000});
     port = 3000;
 
     constructor() {

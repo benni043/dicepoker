@@ -11,8 +11,6 @@ export class JoinComponent {
   playerName: string = "";
   serverName: string = "";
 
-  clicked: boolean = false;
-
   constructor(public routerService: RouterService) {
   }
 
@@ -22,11 +20,7 @@ export class JoinComponent {
 
   start(serverName: string) {
     this.serverName = serverName;
-    this.clicked = true;
-    console.log(this.clicked)
+    this.routerService.toggleJoinGame();
   }
 
-  end() {
-    this.clicked = false;
-  }
 }

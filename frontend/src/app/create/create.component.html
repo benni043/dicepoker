@@ -39,6 +39,9 @@
       </div>
     </div>
 
-    <button type="submit" [disabled]="create.invalid">Spiel erstellen</button>
+    <div id="buttons">
+      <button type="submit" [disabled]="create.invalid">Spiel erstellen</button>
+      <button id="leave" (click)="routerService.toggleCreateGame()">Abbrechen</button>
+    </div>
   </form>
 </div>

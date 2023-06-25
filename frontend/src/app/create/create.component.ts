@@ -10,7 +10,7 @@ export class CreateComponent {
   serverName: string = "";
   playerCount: number = 0;
 
-  constructor(private routerService: RouterService) {
+  constructor(public routerService: RouterService) {
   }
 
   createServer() {

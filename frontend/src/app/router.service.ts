@@ -221,10 +221,16 @@ export class RouterService {
   firstMove: boolean = true;
 
   games: string[] = [];
-  newGame: boolean = false;
 
-  swap() {
-    this.newGame = !this.newGame;
+  createGame: boolean = false;
+  joinGame: boolean = false;
+
+  toggleCreateGame() {
+    this.createGame = !this.createGame;
+  }
+
+  toggleJoinGame() {
+    this.joinGame = !this.joinGame;
   }
 
   sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
@@ -255,7 +261,7 @@ export class RouterService {
 
   create(serverName: string, playerCount: number) {
     this.socket.emit("createGame", {serverName: serverName, playerCount: playerCount});
-    this.swap();
+    this.toggleCreateGame();
   }
 
   sendValue(elem: string) {

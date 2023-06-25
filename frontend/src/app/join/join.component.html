@@ -1,43 +1,49 @@
-<div>
-  <div class="outer">
-    <div class="games">
-      <button class="create" *ngIf="!routerService.joined" (click)="routerService.swap()">Spiel erstellen</button>
+<div id="capture" [class.blur]="routerService.createGame || routerService.joinGame">
+  <div class="games">
+    <button class="create" *ngIf="!routerService.joined" (click)="routerService.toggleCreateGame()" [disabled]="routerService.createGame || routerService.joinGame">Spiel erstellen</button>
+    <br>
+    <br>
+    <br>
+    <br>
 
-      <h1>Server</h1>
-      <br>
-      <button *ngFor="let game of routerService.games" class="game" (click)="start(game)">{{game}}</button>
+    <h1>Verfügbare Lobbys</h1>
+    <br>
+    <div class="outerGames">
+      <button *ngFor="let game of routerService.games" class="game" (click)="start(game)" [disabled]="routerService.joinGame || routerService.createGame">{{game}}</button>
     </div>
   </div>
+</div>
 
-  <div class="center" *ngIf="clicked">
-    <form #joinForm="ngForm" (ngSubmit)="join()">
-      <h1>Spiel beitreten!</h1>
+<div class="center" *ngIf="routerService.joinGame">
+  <form #joinForm="ngForm" (ngSubmit)="join()">
+    <h1>Spiel beitreten!</h1>
 
-      <div>
-        <div class="flex">
-          <div class="txt_field">
-            <input type="text" name="playerName" id="playerName" [(ngModel)]="playerName" #server="ngModel" required
-                   pattern="^[a-zA-Z0-9._]+$" [ngClass]="{'has-value': playerName != ''}">
-            <span></span>
-            <label>Spielername:</label>
-          </div>
-          <div *ngIf="server.hasError('required') && server.touched">
+    <div>
+      <div class="flex">
+        <div class="txt_field">
+          <input type="text" name="playerName" id="playerName" [(ngModel)]="playerName" #server="ngModel" required
+                 pattern="^[a-zA-Z0-9._]+$" [ngClass]="{'has-value': playerName != ''}">
+          <span></span>
+          <label>Spielername:</label>
+        </div>
+        <div *ngIf="server.hasError('required') && server.touched">
           <span class="error" matTooltip="Sie müssen einen Spielernamen angeben!"
                 matTooltipClass="custom-tooltip"
                 matTooltipPosition="below">&#9888;
           </span>
-          </div>
-          <div *ngIf="server.hasError('pattern')">
+        </div>
+        <div *ngIf="server.hasError('pattern')">
           <span class="error" matTooltip="Dieser Spielernamen ist nicht erlaubt!"
                 matTooltipClass="custom-tooltip"
                 matTooltipPosition="below">&#9888;
           </span>
-          </div>
         </div>
-
       </div>
+    </div>
 
-      <button type="submit" [disabled]="joinForm.invalid">Spiel erstellen</button>
-    </form>
-  </div>
+    <div id="buttons">
+      <button id="join" type="submit" [disabled]="joinForm.invalid">Spiel beitreten</button>
+      <button id="leave" (click)="routerService.toggleJoinGame()">Abbrechen</button>
+    </div>
+  </form>
 </div>

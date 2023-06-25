@@ -10,9 +10,14 @@ import {ChangeDiceObject, Dice} from "../game";
 export class DiceDisplayComponent {
 
   constructor(public routerService: RouterService) {
+    this.dices.push(Dice.one)
+    this.dices.push(Dice.one)
+    this.dices.push(Dice.one)
+    this.dices.push(Dice.one)
+    this.dices.push(Dice.one)
   }
 
-  @Input() dices!: Dice[];
+  @Input() dices: Dice[] = [];
 
   @Input() holdDices!: Dice[];
 

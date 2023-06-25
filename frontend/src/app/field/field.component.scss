@@ -1,65 +1,54 @@
-.borderBottom {
-  border-bottom: 3px solid black;
-}
-
-.borderBottom2 {
-  border-bottom: 1px solid gray;
-}
-
-.borderVert {
-  border-right: 3px solid black;
-}
-
-.borderVert2 {
-  border-right: 1px solid gray;
-}
-
-.titleFlex, .valElemRow {
+.outer {
   display: flex;
-  flex-direction: row;
-
-  align-items: center;
-}
-
-.center {
-  text-align: center!important;
-}
-
-.valElem {
-  text-align: center;
-  min-width: 85px;
-  max-width: 85px;
-  height: 15px;
-  padding: 15px;
-  box-sizing: content-box;
-}
-
-.left {
-  text-align: left;
-}
-
-button {
-  background: none;
-  border: 0;
-}
-
-.buttonWrite:not(:disabled):hover {
-  background-color: #f1f1f1;
-}
-
-.buttonWrite:disabled {
-  background-color: lightgray;
-}
-
-#main {
   padding: 20px;
-  border: 2px solid black;
-  border-radius: 15px;
-  max-width: min-content;
+  border: 3px solid black;
+  border-radius: 10px;
+  width: min-content;
 }
 
-.headline {
-  background-color: blueviolet!important;
+.inner {
+  display: flex;
+  flex-direction: column;
 }
 
+.elem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  padding: 5px;
 
+  height: 25px;
+  width: 100px;
+}
+
+.disabled {
+  background-color: #666666;
+}
+
+.thickBottomLine {
+  border-bottom: 4px solid black;
+}
+
+.bottomLine {
+  border-bottom: 2px solid black;
+}
+
+.thickRightLine {
+  border-right: 4px solid black;
+}
+
+.rightLine {
+  border-right: 2px solid black;
+}
+
+.hover:hover {
+  background-color: #adadad;
+}
+
+.scroll {
+  display: flex;
+  overflow-x: scroll;
+  max-width: 220px;
+  padding-bottom: 20px;
+}

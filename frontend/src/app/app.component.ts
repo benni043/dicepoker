@@ -16,6 +16,6 @@ export class AppComponent {
   newGame: boolean = false;
 
   back() {
-
+    window.location.reload()
   }
 }

@@ -387,7 +387,7 @@ export class DicepokerStore {
         game.numberOfPlayersWhoLeft++;
         player.isOnline = false;
 
-        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == 2) {
+        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == game.numberOfPlayersJoined) {
             this.game.delete(serverName);
         }
     } //finish

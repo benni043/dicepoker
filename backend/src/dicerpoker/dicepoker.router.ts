@@ -48,8 +48,9 @@ export class DicepokerRouter {
             })
 
             ws.on("createGame", (createGameData: CreateData) => {
-                this.dicepokerService.createGame(createGameData);
+                let res = this.dicepokerService.createGame(createGameData);
 
+                if (res == -1) ws.emit("illegalPCArgument")
                 this.socketIO.emit("getGames", this.dicepokerService.getAllGames());
             })
 

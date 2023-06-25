@@ -37,6 +37,20 @@
           </span>
         </div>
       </div>
+
+      <div class="flex">
+        <div class="txt_field">
+          <input type="number" name="columnCount" id="columnCount" [(ngModel)]="columnCount" #cc="ngModel" required  [ngClass]="{'has-value': columnCount != null}">
+          <span></span>
+          <label>Spaltenanzahl:</label>
+        </div>
+        <div *ngIf="cc.hasError('required') && cc.touched">
+          <span class="error" matTooltip="Sie müssen ein Passwort angeben!"
+                matTooltipClass="custom-tooltip"
+                matTooltipPosition="below">&#9888;
+          </span>
+        </div>
+      </div>
     </div>
 
     <div id="buttons">

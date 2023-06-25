@@ -27,27 +27,16 @@
 }
 
 .leave {
-  width: 100px;
-  height: 50px;
+  background-color: red;
+  color: #fff;
+  padding: 10px 20px;
   border: none;
-  border-radius: 10px;
-  font-size: 18px;
-  color: #e9f4fb;
-  font-weight: 700;
+  border-radius: 4px;
+  font-size: 16px;
   cursor: pointer;
-  outline: none;
-  transition: 0.5s;
-
-  &:not(:disabled) {
-    background: #f62f2f;
-  }
-
-  &:disabled {
-    background: #928e8e;
-  }
 
   &:not(:disabled):hover {
-    background-color: #de0d0d;
+    background-color: #d70101;
   }
 
   position: absolute;
@@ -56,3 +45,9 @@
   right: 0;
 }
 
+
+#backendErr {
+  position: absolute;
+  left: 0;
+  top: 0;
+}

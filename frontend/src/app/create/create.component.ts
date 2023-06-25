@@ -9,6 +9,7 @@ import {RouterService} from "../router.service";
 export class CreateComponent {
   serverName: string = "";
   playerCount: number = 0;
+  columnCount: number = 0;
 
   constructor(public routerService: RouterService) {
   }

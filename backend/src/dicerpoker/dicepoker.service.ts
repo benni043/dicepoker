@@ -27,6 +27,9 @@ export class DicepokerService {
     }
 
     createGame(createData: CreateData) {
+        if (createData.playerCount <= 0) {
+            return -1;
+        }
         let game = this.dicerpokerStore.gameGetter();
 
         if (!game.has(createData.serverName)) {
@@ -40,7 +43,9 @@ export class DicepokerService {
         }
 
         if (this.getGameState(standardGameData.serverName) == GameState.running) {
-            let player = this.getPlayer(standardGameData.serverName, standardGameData.playerName)!;
+            let player = this.getPlayer(standardGameData.serverName, standardGameData.playerName);
+
+            if (player == null) return ReturnEnum.gameFullErr;
 
             if (!player.isOnline && player.playerName == standardGameData.playerName) {
                 this.dicerpokerStore.rejoin(standardGameData.serverName, standardGameData.playerName, ws);

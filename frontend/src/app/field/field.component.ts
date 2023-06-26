@@ -81,7 +81,7 @@ export class FieldComponent implements OnInit{
   @Input() bools: boolean[] = [];
 
   list: string[] = ["ones","twos", "threes", "fours", "fives", "sixes", "fullHouse", "street", "poker", "grande", "doubleGrande"];
-  nameCol: string[] = ["Poker", "9", "10", "B", "D", "K", "A", "F", "St", "P", "G", "Dg", "Summe"];
+  nameCol: string[] = ["Poker", "1", "2", "3", "4", "5", "6", "F", "St", "P", "G", "Dg", "Summe"];
 
   getPlayers() {
     let players: string[] = [];

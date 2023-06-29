@@ -108,16 +108,16 @@ export class RouterService {
       }
 
       this.movesLeft = rejoinData.moves;
-      this.dices = rejoinData.dices;
-      this.holdDices = rejoinData.holdDices;
+      //this.dices = rejoinData.dices;
+      //this.holdDices = rejoinData.holdDices;
 
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
     })
 
     this.socket.on("newDices", (res: ThrowRes) => {
-      this.dices = res.newDices.dices;
-      this.holdDices = res.newDices.holdDices;
+      //this.dices = res.newDices.dices;
+      //this.holdDices = res.newDices.holdDices;
       this.movesLeft = res.moves;
 
       if (res.moves == 0) {
@@ -166,7 +166,7 @@ export class RouterService {
 
       this.playersField = null;
       this.sumField = null;
-      this.dices = [];
+      //this.dices = [];
       this.movesLeft = 3;
 
       setTimeout(() => {
@@ -184,15 +184,15 @@ export class RouterService {
     this.socket.on("setActivePlayer", (activePlayer) => {
       this.activePlayer = activePlayer;
 
-      this.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
-      this.holdDices = [];
+      //this.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
+      //this.holdDices = [];
       this.throwEnd = false;
       this.firstMove = true;
     })
 
     this.socket.on("switched", (newDices: NewDices) => {
-      this.dices = newDices.dices;
-      this.holdDices = newDices.holdDices;
+      //this.dices = newDices.dices;
+      //this.holdDices = newDices.holdDices;
     });
 
     this.socket.on("getGames", (games) => {
@@ -213,9 +213,6 @@ export class RouterService {
 
   sumField!: Map<string, PointsField> | null;
   playersField!: Map<string, PointsField> | null;
-
-  dices: Dice[] = [];
-  holdDices: Dice[] = [];
 
   joined: boolean = false;
   throwEnd: boolean = false;
@@ -241,6 +238,7 @@ export class RouterService {
     const sortedMap = new Map(sortedArray);
     return sortedMap
   }
+
   fillBools(sumField: Map<string, PointsField>, name: string) {
     let bools: boolean[] = []
 
@@ -290,30 +288,29 @@ export class RouterService {
     })
   }
 
+  changeDices: ChangeDiceObject[] = [
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true}];
+
   throw(receiveDices: ChangeDiceObject[]) {
-    let dices = [
+    let dice = [
       {dice: Dice.one, change: true},
       {dice: Dice.one, change: true},
       {dice: Dice.one, change: true},
       {dice: Dice.one, change: true},
       {dice: Dice.one, change: true}];
 
-    this.dices = [];
-    this.holdDices = [];
-
-    for (let receiveDice of receiveDices) {
-      if (receiveDice.change) {
-        this.dices.push(receiveDice.dice);
-      } else {
-        this.holdDices.push(receiveDice.dice)
-      }
-    }
+    console.log(receiveDices)
 
     this.socket.emit("setDices", ({
-      receiveDices: this.firstMove ? dices : receiveDices,
+      receiveDices: this.firstMove ? dice : receiveDices,
       standardGameData: {serverName: this.serverName, playerName: this.playerName},
     }))
 
+    this.changeDices = receiveDices;
     this.firstMove = false;
   }
 }

@@ -23,6 +23,7 @@ export class DiceDisplayComponent implements OnInit, OnChanges {
 
   ngOnInit() {
     this.displayDices = []
+
     for (let dice of this.dices) {
       this.displayDices.push({dice: dice, change: false});
     }

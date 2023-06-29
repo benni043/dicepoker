@@ -16,10 +16,10 @@
       <button class="leave" (click)="back()">Verlassen</button>
 
       <div class="field">
-              <app-field [readonlyV]="true" [map]="routerService.sumField!"
-                         *ngIf="routerService.sumField != undefined"></app-field>
-              <app-field [readonlyV]="false" [bools]="routerService.bools" [map]="routerService.playersField!"
-                         *ngIf="routerService.playersField != undefined"></app-field>
+        <app-field [readonlyV]="true" [map]="routerService.sumField!"
+                   *ngIf="routerService.sumField != undefined"></app-field>
+        <app-field [readonlyV]="false" [bools]="routerService.bools" [map]="routerService.playersField!"
+                   *ngIf="routerService.playersField != undefined"></app-field>
       </div>
 
       <div class="dice">
@@ -30,7 +30,7 @@
         </div>
 
         <div>
-          <app-dice-display id="display" [holdDices]="routerService.holdDices" [dices]="routerService.dices"></app-dice-display>
+          <app-display-dice-new [class.red]="routerService." id="display" [changeDices]="routerService.changeDices"></app-display-dice-new>
         </div>
       </div>
     </div>

@@ -22,7 +22,7 @@
                    *ngIf="routerService.playersField != undefined"></app-field>
       </div>
 
-      <div class="dice">
+      <div class="dice" id="outer">
         <div class="data">
           <h2 *ngIf="routerService.end">Gewinner: {{routerService.winner}}</h2>
           <h2 *ngIf="!routerService.end">Aktueller Spieler: {{routerService.activePlayer}}</h2>
@@ -30,7 +30,7 @@
         </div>
 
         <div>
-          <app-display-dice-new [class.red]="routerService." id="display" [changeDices]="routerService.changeDices"></app-display-dice-new>
+          <app-display-dice-new id="display" [changeDices]="routerService.changeDices"></app-display-dice-new>
         </div>
       </div>
     </div>

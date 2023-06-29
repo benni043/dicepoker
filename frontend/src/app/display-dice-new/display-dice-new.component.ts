@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {RouterService} from "../router.service";
 import {ChangeDiceObject, Dice} from "../game";
 
@@ -7,7 +7,7 @@ import {ChangeDiceObject, Dice} from "../game";
   templateUrl: './display-dice-new.component.html',
   styleUrls: ['./display-dice-new.component.scss']
 })
-export class DisplayDiceNewComponent {
+export class DisplayDiceNewComponent{
 
   constructor(public routerService: RouterService) {
 
@@ -16,7 +16,9 @@ export class DisplayDiceNewComponent {
   @Input() changeDices: ChangeDiceObject[] = [];
 
   switch(index: number) {
-    this.changeDices[index].change = !this.changeDices[index].change;
+    if (this.canMove()) {
+      this.changeDices[index].change = !this.changeDices[index].change;
+    }
   }
 
   throw() {
@@ -25,5 +27,9 @@ export class DisplayDiceNewComponent {
 
   throwEnd() {
     this.routerService.leaveThrow();
+  }
+
+  canMove() {
+    return this.routerService.activePlayer == this.routerService.playerName && !this.routerService.throwEnd && !this.routerService.end && !this.routerService.firstMove;
   }
 }

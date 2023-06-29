@@ -9,6 +9,7 @@ import {Dice} from "../game";
 export class DiceComponent implements OnInit{
 
   @Input() dice!: Dice;
+  @Input() hold: boolean = false;
 
   path: string = "/assets/src/";
 

@@ -116,6 +116,8 @@ export class RouterService {
     })
 
     this.socket.on("newDices", (res: ThrowRes) => {
+      this.changeDices = this.makeChangeDiceObj(res.newDices.holdDices, res.newDices.dices);
+      console.log(this.changeDices)
       //this.dices = res.newDices.dices;
       //this.holdDices = res.newDices.holdDices;
       this.movesLeft = res.moves;
@@ -166,7 +168,6 @@ export class RouterService {
 
       this.playersField = null;
       this.sumField = null;
-      //this.dices = [];
       this.movesLeft = 3;
 
       setTimeout(() => {
@@ -184,15 +185,19 @@ export class RouterService {
     this.socket.on("setActivePlayer", (activePlayer) => {
       this.activePlayer = activePlayer;
 
-      //this.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
-      //this.holdDices = [];
+      this.changeDices = [
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true}];
+
       this.throwEnd = false;
       this.firstMove = true;
     })
 
     this.socket.on("switched", (newDices: NewDices) => {
-      //this.dices = newDices.dices;
-      //this.holdDices = newDices.holdDices;
+      this.changeDices = this.makeChangeDiceObj(newDices.holdDices, newDices.dices);
     });
 
     this.socket.on("getGames", (games) => {
@@ -224,6 +229,20 @@ export class RouterService {
 
   createGame: boolean = false;
   joinGame: boolean = false;
+
+  makeChangeDiceObj(holdDices: Dice[], dices: Dice[]): ChangeDiceObject[] {
+    let changeDice = [];
+
+    for (let holdDice of holdDices) {
+      changeDice.push({dice: holdDice, change: false} as ChangeDiceObject)
+    }
+
+    for (let dice of dices) {
+      changeDice.push({dice: dice, change: true} as ChangeDiceObject)
+    }
+
+    return changeDice;
+  }
 
   toggleCreateGame() {
     this.createGame = !this.createGame;
@@ -303,14 +322,11 @@ export class RouterService {
       {dice: Dice.one, change: true},
       {dice: Dice.one, change: true}];
 
-    console.log(receiveDices)
-
     this.socket.emit("setDices", ({
       receiveDices: this.firstMove ? dice : receiveDices,
       standardGameData: {serverName: this.serverName, playerName: this.playerName},
     }))
 
-    this.changeDices = receiveDices;
     this.firstMove = false;
   }
 }

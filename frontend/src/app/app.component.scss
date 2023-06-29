@@ -1,8 +1,6 @@
 .center {
   display: flex;
   align-items: center;
-  height: 100vh;
-  margin-left: 50px;
 }
 
 .dice {
@@ -52,12 +50,24 @@
   top: 0;
 }
 
+#outer {
+  max-height: 250px;
+}
+
 @media (max-width: 700px) {
   .center {
     display: flex;
     flex-direction: column-reverse;
     justify-content: center;
     margin: 10px;
+  }
+
+  #outer {
+    margin-top: 55px;
+  }
+
+  .field {
+    margin: 5px;
   }
 
 }

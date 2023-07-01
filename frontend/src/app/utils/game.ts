@@ -1,4 +1,4 @@
-import {Socket} from "socket.io";
+import {Socket} from "socket.io-client";
 
 export type Game = {
   players: Player[],
@@ -61,40 +61,9 @@ export type PointsField = {
   sum: number,
 }
 
-export enum GetError {
-  gameNotExists = "gameNotExists",
-  unknownPlayer = "unknownPlayer",
-}
-
-export enum SetError {
-  gameNotExists = "gameNotExists",
-  gameNotStarted = "gameNotStarted",
-  gameFinished = "gameFinished",
-  unknownPlayer = "unknownPlayer",
-  wrongPlayer = "wrongPlayer",
-  fieldFull = "fieldFull"
-}
-
-export enum SetSuccess {
-  update = "update",
-  end = "end"
-}
-
-export enum ReturnEnum {
-  gameFullErr,
-  joinSuccess,
-  illegalPlayerErr,
-  rejoin,
-  gameEnd
-}
-
 export type End = {
   winner: string,
   sumField: string
-}
-
-export enum GameNotExists {
-  gameNotExistsError = "gameNotExistsError"
 }
 
 export type RejoinData = {
@@ -119,22 +88,7 @@ export type StandardGameData = {
   playerName: string,
 }
 
-export type CreateData = {
-  serverName: string,
-  playerCount: number
-}
-
 export type ChangeDiceObject = {
   dice: Dice,
   change: boolean
-}
-
-export type ThrowData = {
-  standardGameData: StandardGameData,
-  receiveDices: ChangeDiceObject[]
-}
-
-export type SetPointData = {
-  standardGameData: StandardGameData,
-  field: string
 }

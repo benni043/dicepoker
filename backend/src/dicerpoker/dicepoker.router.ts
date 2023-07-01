@@ -44,7 +44,7 @@ export class DicepokerRouter {
             let serverName: string
 
             ws.on("getAllGames", () => {
-                this.socketIO.emit("getGames", this.dicepokerService.getAllGames())
+                ws.emit("getGames", this.dicepokerService.getAllGames());
             })
 
             ws.on("createGame", (createGameData: CreateData) => {
@@ -144,7 +144,7 @@ export class DicepokerRouter {
                 } else if (res == GetError.unknownPlayer) {
                     ws.emit("unknownPlayer");
                 } else {
-                    ws.emit("setSumField", JSON.stringify(Array.from(res.entries())));
+                    ws.emit("sumField", JSON.stringify(Array.from(res.entries())));
                 }
             }) //finish
 
@@ -189,7 +189,7 @@ export class DicepokerRouter {
                 } else if (res == GetError.unknownPlayer) {
                     ws.emit("unknownPlayer");
                 } else {
-                    ws.emit("setActivePlayer", res);
+                    ws.emit("activePlayer", res);
                 }
             }) //finish
 

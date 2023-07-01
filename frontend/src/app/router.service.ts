@@ -12,7 +12,7 @@ import {
   RejoinType,
   StandardGameData,
   ThrowRes
-} from "./game";
+} from "./utils/game";
 
 @Injectable({
   providedIn: 'root'
@@ -71,21 +71,8 @@ export class RouterService {
       this.error("Es muss mindestens einen Spieler geben!")
     })
 
-
-    this.socket.on("joinSuccess", (sumField: { sumField: any }) => {
-      console.log("joinSucc");
-
-      this.sumField = new Map(JSON.parse(sumField.sumField))
-      this.joined = true;
-
-      this.socket.emit("getActivePlayer", {
-        serverName: this.serverName,
-        playerName: this.playerName
-      } as StandardGameData)
-    })
-
     this.socket.on("rejoin", (rejoinData: RejoinData) => {
-      console.log("rejoin");
+      //todo fix rejoin
 
       this.joined = true;
 
@@ -108,18 +95,39 @@ export class RouterService {
       }
 
       this.movesLeft = rejoinData.moves;
-      //this.dices = rejoinData.dices;
-      //this.holdDices = rejoinData.holdDices;
 
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
     })
 
+
+    this.socket.on("joinSuccess", (sumField: { sumField: any }) => {
+      this.sumField = new Map(JSON.parse(sumField.sumField))
+      this.joined = true;
+
+      this.socket.emit("getActivePlayer", {
+        serverName: this.serverName,
+        playerName: this.playerName
+      } as StandardGameData)
+    })
+
+    this.socket.on("activePlayer", (activePlayer) => {
+      this.activePlayer = activePlayer;
+      this.throwEnd = false;
+      this.firstMove = true;
+      this.movesLeft = 3;
+
+      this.changeDices = [
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true}];
+    })
+
     this.socket.on("newDices", (res: ThrowRes) => {
       this.changeDices = this.makeChangeDiceObj(res.newDices.holdDices, res.newDices.dices);
-      console.log(this.changeDices)
-      //this.dices = res.newDices.dices;
-      //this.holdDices = res.newDices.holdDices;
+
       this.movesLeft = res.moves;
 
       if (res.moves == 0) {
@@ -132,7 +140,7 @@ export class RouterService {
       }
     })
 
-    this.socket.on("setPlayersField", (playersField: string) => {
+    this.socket.on("playersField", (playersField: string) => {
       let map: Map<string, PointsField> = new Map(JSON.parse(playersField));
 
       if (!map.has(this.playerName)) return;
@@ -149,13 +157,6 @@ export class RouterService {
       }, 10)
     })
 
-    this.socket.on("end", (end: End) => {
-      this.end = true;
-      this.sumField = new Map(JSON.parse(end.sumField));
-      this.playersField = null;
-      this.winner = end.winner;
-    })
-
     this.socket.on("update", () => {
       this.socket.emit("getSumField", ({
         playerName: this.playerName,
@@ -163,12 +164,11 @@ export class RouterService {
       } as StandardGameData))
     })
 
-    this.socket.on("setSumField", (sumField) => {
-      let map: Map<string, PointsField> = this.sortMap(new Map(JSON.parse(sumField)));
+    this.socket.on("sumField", (sumField) => {
+      let map: Map<string, PointsField> = new Map(JSON.parse(sumField));
 
       this.playersField = null;
       this.sumField = null;
-      this.movesLeft = 3;
 
       setTimeout(() => {
         this.sumField = map;
@@ -182,18 +182,11 @@ export class RouterService {
       }, 10)
     })
 
-    this.socket.on("setActivePlayer", (activePlayer) => {
-      this.activePlayer = activePlayer;
-
-      this.changeDices = [
-        {dice: Dice.one, change: true},
-        {dice: Dice.one, change: true},
-        {dice: Dice.one, change: true},
-        {dice: Dice.one, change: true},
-        {dice: Dice.one, change: true}];
-
-      this.throwEnd = false;
-      this.firstMove = true;
+    this.socket.on("end", (end: End) => {
+      this.end = true;
+      this.sumField = new Map(JSON.parse(end.sumField));
+      this.playersField = null;
+      this.winner = end.winner;
     })
 
     this.socket.on("switched", (newDices: NewDices) => {

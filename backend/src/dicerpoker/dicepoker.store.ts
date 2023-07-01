@@ -244,6 +244,12 @@ export class DicepokerStore {
             {dice: Dice.one, change: true}];
 
         opponent.isOnMove = true;
+        opponent.dices = [{dice: Dice.one, change: true},
+            {dice: Dice.one, change: true},
+            {dice: Dice.one, change: true},
+            {dice: Dice.one, change: true},
+            {dice: Dice.one, change: true}];
+
         player.movesLeft = 3;
         player.pointsFieldTMP = {
             ones: 0,

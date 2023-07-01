@@ -1,7 +1,14 @@
 .outer {
   display: flex;
-  padding: 0px;
+  padding: 0;
   width: min-content;
+}
+
+.fullOuter {
+  height: 100vh;
+  margin-left: 50px;
+  display: flex;
+  align-items: center;
 }
 
 .inner {

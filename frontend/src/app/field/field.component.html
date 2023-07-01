@@ -1,41 +1,44 @@
-<div class="outer" *ngIf="readonlyV">
-  <div class="inner">
-    <div class="nameCol" *ngFor="let name of nameCol; index as j">
-      <div [class.thickBottomLine]="j === 0" [class.bottomLine]="j > 0 && j < nameCol.length-1"
-           [class.thickRightLine]="j < nameCol.length" class="name" class="elem">{{name}}</div>
-    </div>
-  </div>
-
-  <div class="scroll">
-    <div class="users inner " *ngFor="let player of getPlayers(); index as j">
-      <div class="elem thickBottomLine" [class.rightLine]="j < getPlayers().length-1">{{player}}</div>
-      <div>
-        <div class="elem" [class.rightLine]="j < getPlayers().length-1" [class.bottomLine]="i < nameCol.length-1"
-             (click)="click(i)" *ngFor="let value of getValuesOfPlayer(player); index as i">
-          <div *ngIf="value === -1"></div>
-          <div *ngIf="value !== -1">{{value}}</div>
-        </div>
+<div class="fullOuter">
+  <div class="outer" *ngIf="readonlyV">
+    <div class="inner">
+      <div class="nameCol" *ngFor="let name of nameCol; index as j">
+        <div [class.thickBottomLine]="j === 0" [class.bottomLine]="j > 0 && j < nameCol.length-1"
+             [class.thickRightLine]="j < nameCol.length" class="name" class="elem">{{name}}</div>
       </div>
-      <div class="elem sum" [class.rightLine]="j < getPlayers().length-1">{{getSumOfPlayer(player)}}</div>
+    </div>
+
+    <div class="scroll">
+      <div class="users inner " *ngFor="let player of getPlayers(); index as j">
+        <div class="elem thickBottomLine" [class.rightLine]="j < getPlayers().length-1">{{player}}</div>
+        <div>
+          <div class="elem" [class.rightLine]="j < getPlayers().length-1" [class.bottomLine]="i < nameCol.length-1"
+               (click)="click(i)" *ngFor="let value of getValuesOfPlayer(player); index as i">
+            <div *ngIf="value === -1"></div>
+            <div *ngIf="value !== -1">{{value}}</div>
+          </div>
+        </div>
+        <div class="elem sum" [class.rightLine]="j < getPlayers().length-1">{{getSumOfPlayer(player)}}</div>
+      </div>
     </div>
   </div>
-</div>
 
-<!---->
+  <!---->
 
-<div class="outer" *ngIf="!readonlyV">
-  <div class="inner">
-    <div class="nameCol" *ngFor="let name of nameCol; index as j">
-      <div [class.thickBottomLine]="j === 0" [class.bottomLine]="j > 0 && j < nameCol.length-1"
-           [class.thickRightLine]="j < nameCol.length" class="name" class="elem">{{name}}</div>
+  <div class="outer" *ngIf="!readonlyV">
+    <div class="inner">
+      <div class="nameCol" *ngFor="let name of nameCol; index as j">
+        <div [class.thickBottomLine]="j === 0" [class.bottomLine]="j > 0 && j < nameCol.length-1"
+             [class.thickRightLine]="j < nameCol.length" class="name" class="elem">{{name}}</div>
+      </div>
+    </div>
+
+    <div class="scroll">
+      <div class="users inner" *ngFor="let player of getPlayers(); index as j">
+        <div class="elem thickBottomLine" [class.rightLine]="j < getPlayers().length-1">{{player}}</div>
+        <div class="elem" [class.hover]="bools[i]" [class.rightLine]="j < getPlayers().length-1" [class.disabled]="!bools[i]" (click)="click(i)" [class.bottomLine]="i < nameCol.length-1" *ngFor="let value of getValuesOfPlayer(player); index as i">{{value}}</div>
+        <div class="elem sum" [class.rightLine]="j < getPlayers().length-1">{{getSumOfPlayer(player)}}</div>
+      </div>
     </div>
   </div>
 
-  <div class="scroll">
-    <div class="users inner" *ngFor="let player of getPlayers(); index as j">
-      <div class="elem thickBottomLine" [class.rightLine]="j < getPlayers().length-1">{{player}}</div>
-      <div class="elem" [class.hover]="bools[i]" [class.rightLine]="j < getPlayers().length-1" [class.disabled]="!bools[i]" (click)="click(i)" [class.bottomLine]="i < nameCol.length-1" *ngFor="let value of getValuesOfPlayer(player); index as i">{{value}}</div>
-      <div class="elem sum" [class.rightLine]="j < getPlayers().length-1">{{getSumOfPlayer(player)}}</div>
-    </div>
-  </div>
 </div>

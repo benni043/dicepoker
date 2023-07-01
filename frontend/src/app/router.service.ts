@@ -73,8 +73,6 @@ export class RouterService {
 
 
     this.socket.on("rejoin", (rejoinData: RejoinData) => {
-      //todo fix rejoin
-
       this.joined = true;
 
       switch (rejoinData.type) {

@@ -11,7 +11,7 @@ import {
   RejoinData,
   RejoinType,
   StandardGameData,
-  ThrowRes
+  ThrowRes, UpdateDices
 } from "./utils/game";
 
 @Injectable({
@@ -71,6 +71,7 @@ export class RouterService {
       this.error("Es muss mindestens einen Spieler geben!")
     })
 
+
     this.socket.on("rejoin", (rejoinData: RejoinData) => {
       //todo fix rejoin
 
@@ -98,8 +99,8 @@ export class RouterService {
 
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
+      this.changeDices = this.makeChangeDiceObj(rejoinData.holdDices, rejoinData.dices);
     })
-
 
     this.socket.on("joinSuccess", (sumField: { sumField: any }) => {
       this.sumField = new Map(JSON.parse(sumField.sumField))
@@ -189,8 +190,8 @@ export class RouterService {
       this.winner = end.winner;
     })
 
-    this.socket.on("switched", (newDices: NewDices) => {
-      this.changeDices = this.makeChangeDiceObj(newDices.holdDices, newDices.dices);
+    this.socket.on("newChangedDices", (dices: ChangeDiceObject[]) => {
+      this.changeDices = dices;
     });
 
     this.socket.on("getGames", (games) => {
@@ -223,6 +224,13 @@ export class RouterService {
   createGame: boolean = false;
   joinGame: boolean = false;
 
+  changeDices: ChangeDiceObject[] = [
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true},
+    {dice: Dice.one, change: true}];
+
   makeChangeDiceObj(holdDices: Dice[], dices: Dice[]): ChangeDiceObject[] {
     let changeDice = [];
 
@@ -243,12 +251,6 @@ export class RouterService {
 
   toggleJoinGame() {
     this.joinGame = !this.joinGame;
-  }
-
-  sortMap(map: Map<string, PointsField>): Map<string, PointsField> {
-    const sortedArray = Array.from(map.entries()).sort(([key1], [key2]) => key1.localeCompare(key2));
-    const sortedMap = new Map(sortedArray);
-    return sortedMap
   }
 
   fillBools(sumField: Map<string, PointsField>, name: string) {
@@ -293,19 +295,12 @@ export class RouterService {
     } as StandardGameData));
   }
 
-  switched(dices: Dice[], holdDices: Dice[]) {
-    this.socket.emit("switched", {
-      newDices: {dices: dices, holdDices: holdDices},
+  switchedDice(dices: ChangeDiceObject[]) {
+    this.socket.emit("sendNewDices", {
+      dices: dices,
       standardGameData: {serverName: this.serverName, playerName: this.playerName}
-    })
+    } as UpdateDices)
   }
-
-  changeDices: ChangeDiceObject[] = [
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true}];
 
   throw(receiveDices: ChangeDiceObject[]) {
     let dice = [

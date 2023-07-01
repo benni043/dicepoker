@@ -7,73 +7,70 @@ import {PointsField} from "../utils/game";
   templateUrl: './field.component.html',
   styleUrls: ['./field.component.scss']
 })
-export class FieldComponent implements OnInit{
+export class FieldComponent{
 
   constructor(private routerService: RouterService) {
-    this.map = new Map();
-
-    this.map.set("test", {
-      doubleGrande: 100,
-      fives: 0,
-      fours: 3,
-      fullHouse: 0,
-      grande: 0,
-      ones: 100,
-      poker: 0,
-      sixes: 0,
-      street: 0,
-      sum: 0,
-      threes: 0,
-      twos: 100
-    })
-
-    this.map.set("test2", {
-      doubleGrande: 0,
-      fives: 0,
-      fours: 0,
-      fullHouse: 0,
-      grande: 0,
-      ones: 1,
-      poker: 0,
-      sixes: 0,
-      street: 0,
-      sum: 0,
-      threes: 0,
-      twos: 123
-    })
-
-    this.map.set("test3", {
-      doubleGrande: 0,
-      fives: 0,
-      fours: 0,
-      fullHouse: 0,
-      grande: 0,
-      ones: 1,
-      poker: 0,
-      sixes: 0,
-      street: 0,
-      sum: 0,
-      threes: 0,
-      twos: 123
-    })
-
-    this.map.set("test4", {
-      doubleGrande: 0,
-      fives: 0,
-      fours: 0,
-      fullHouse: 0,
-      grande: 0,
-      ones: 1,
-      poker: 0,
-      sixes: 0,
-      street: 0,
-      sum: 0,
-      threes: 0,
-      twos: 123
-    })
-  }
-
-  ngOnInit() {
+    // this.map = new Map();
+    //
+    // this.map.set("test", {
+    //   doubleGrande: 100,
+    //   fives: 0,
+    //   fours: 3,
+    //   fullHouse: 0,
+    //   grande: 0,
+    //   ones: 100,
+    //   poker: 0,
+    //   sixes: 0,
+    //   street: 0,
+    //   sum: 0,
+    //   threes: 0,
+    //   twos: 100
+    // })
+    //
+    // this.map.set("test2", {
+    //   doubleGrande: 0,
+    //   fives: 0,
+    //   fours: 0,
+    //   fullHouse: 0,
+    //   grande: 0,
+    //   ones: 1,
+    //   poker: 0,
+    //   sixes: 0,
+    //   street: 0,
+    //   sum: 0,
+    //   threes: 0,
+    //   twos: 123
+    // })
+    //
+    // this.map.set("test3", {
+    //   doubleGrande: 0,
+    //   fives: 0,
+    //   fours: 0,
+    //   fullHouse: 0,
+    //   grande: 0,
+    //   ones: 1,
+    //   poker: 0,
+    //   sixes: 0,
+    //   street: 0,
+    //   sum: 0,
+    //   threes: 0,
+    //   twos: 123
+    // })
+    //
+    // this.map.set("test4", {
+    //   doubleGrande: 0,
+    //   fives: 0,
+    //   fours: 0,
+    //   fullHouse: 0,
+    //   grande: 0,
+    //   ones: 1,
+    //   poker: 0,
+    //   sixes: 0,
+    //   street: 0,
+    //   sum: 0,
+    //   threes: 0,
+    //   twos: 123
+    // })
   }
 
   @Input() map!: Map<string, PointsField>;

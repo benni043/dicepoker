@@ -131,6 +131,13 @@ export class DicepokerStore {
         player.socket = ws;
     }
 
+    changeDices(serverName: string, playerName: string, dices: ChangeDiceObject[]) {
+        let game = this.game.get(serverName)!;
+        let player = this.getPlayer(serverName, playerName)!;
+
+        player.
+    }
+
     setDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: string): ThrowRes {
         let newDices = []
         let holdDices = []

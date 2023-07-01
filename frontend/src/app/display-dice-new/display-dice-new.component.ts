@@ -18,6 +18,7 @@ export class DisplayDiceNewComponent{
   switch(index: number) {
     if (this.canMove()) {
       this.changeDices[index].change = !this.changeDices[index].change;
+      this.routerService.switchedDice(this.changeDices);
     }
   }
 

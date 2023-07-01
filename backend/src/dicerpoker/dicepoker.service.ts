@@ -69,6 +69,10 @@ export class DicepokerService {
         return ReturnEnum.gameFullErr//todo invalid
     }
 
+    changeDices(serverName: string, playerName: string, dices: ChangeDiceObject[]) {
+
+    }
+
     getRejoinData(serverName: string, playerName: string): GameNotExists | RejoinData {
         let game = this.dicerpokerStore.getGame(serverName);
 
@@ -76,9 +80,6 @@ export class DicepokerService {
         else {
             let me = this.getPlayer(serverName, playerName)!;
             let activePlayer = this.getActivePlayer(serverName)!;
-
-            // let player = game.player1.playerName == playerName ? game.player1 : game.player2;
-            // let opponent = game.player1.playerName != playerName ? game.player1 : game.player2;
 
             if (me.isOnMove && me.movesLeft > 0) {
                 return {

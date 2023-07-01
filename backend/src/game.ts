@@ -138,3 +138,8 @@ export type SetPointData = {
     standardGameData: StandardGameData,
     field: string
 }
+
+export type UpdateDices = {
+    dices: ChangeDiceObject[],
+    standardGameData: StandardGameData
+}

@@ -4,6 +4,7 @@ import * as http from "http";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
+    ChangeDiceObject,
     CreateData,
     End,
     GameNotExists,
@@ -17,7 +18,7 @@ import {
     SetPointData,
     SetSuccess,
     StandardGameData,
-    ThrowData
+    ThrowData, UpdateDices
 } from "../game";
 import path from "path";
 
@@ -87,11 +88,11 @@ export class DicepokerRouter {
                 }
             });
 
-            ws.on("switched", (data: { newDices: NewDices, standardGameData: StandardGameData }) => {
+            ws.on("sendNewDices", (data: UpdateDices) => {
                 let players: Player[] = this.dicepokerService.getPlayers(data.standardGameData.serverName);
 
                 for (let player of players) {
-                    player.socket?.emit("switched", (data.newDices))
+                    player.socket?.emit("newChangedDices", (data.dices))
                 }
             }) //finish
 
@@ -132,11 +133,12 @@ export class DicepokerRouter {
                 } else if (res == SetError.fieldFull) {
                     ws.emit("fieldFull")
                 } else {
-                    ws.emit("setPlayersField", JSON.stringify(Array.from(res.entries())));
+                    ws.emit("playersField", JSON.stringify(Array.from(res.entries())));
                 }
             }); //finish
 
             ws.on("getSumField", (standardGameData: StandardGameData) => {
+                console.log(2)
                 let res: Map<string, PointsField> | GetError = this.dicepokerService.routerGetSumField(standardGameData.playerName, standardGameData.serverName);
 
                 if (res == GetError.gameNotExists) {

@@ -92,3 +92,8 @@ export type ChangeDiceObject = {
   dice: Dice,
   change: boolean
 }
+
+export type UpdateDices = {
+  dices: ChangeDiceObject[],
+  standardGameData: StandardGameData
+}

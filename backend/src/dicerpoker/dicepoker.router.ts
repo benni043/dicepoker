@@ -90,6 +90,7 @@ export class DicepokerRouter {
 
             ws.on("sendNewDices", (data: UpdateDices) => {
                 let players: Player[] = this.dicepokerService.getPlayers(data.standardGameData.serverName);
+                this.dicepokerService.changeDices(data.standardGameData.serverName, data.standardGameData.playerName, data.dices);
 
                 for (let player of players) {
                     player.socket?.emit("newChangedDices", (data.dices))
@@ -138,7 +139,6 @@ export class DicepokerRouter {
             }); //finish
 
             ws.on("getSumField", (standardGameData: StandardGameData) => {
-                console.log(2)
                 let res: Map<string, PointsField> | GetError = this.dicepokerService.routerGetSumField(standardGameData.playerName, standardGameData.serverName);
 
                 if (res == GetError.gameNotExists) {

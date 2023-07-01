@@ -99,7 +99,7 @@ export class RouterService {
 
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
-      this.changeDices = this.makeChangeDiceObj(rejoinData.holdDices, rejoinData.dices);
+      this.changeDices = rejoinData.dices;
     })
 
     this.socket.on("joinSuccess", (sumField: { sumField: any }) => {
@@ -127,7 +127,7 @@ export class RouterService {
     })
 
     this.socket.on("newDices", (res: ThrowRes) => {
-      this.changeDices = this.makeChangeDiceObj(res.newDices.holdDices, res.newDices.dices);
+      this.changeDices = res.newDices;
 
       this.movesLeft = res.moves;
 
@@ -230,20 +230,6 @@ export class RouterService {
     {dice: Dice.one, change: true},
     {dice: Dice.one, change: true},
     {dice: Dice.one, change: true}];
-
-  makeChangeDiceObj(holdDices: Dice[], dices: Dice[]): ChangeDiceObject[] {
-    let changeDice = [];
-
-    for (let holdDice of holdDices) {
-      changeDice.push({dice: holdDice, change: false} as ChangeDiceObject)
-    }
-
-    for (let dice of dices) {
-      changeDice.push({dice: dice, change: true} as ChangeDiceObject)
-    }
-
-    return changeDice;
-  }
 
   toggleCreateGame() {
     this.createGame = !this.createGame;

@@ -10,8 +10,7 @@ export type Game = {
 export type Player = {
     playerName: string,
     socket: Socket | undefined,
-    dices: Dice[],
-    holdDices: Dice[]
+    dices: ChangeDiceObject[]
     points: number,
     movesLeft: number,
     isOnline: boolean,
@@ -28,7 +27,7 @@ export enum GameState {
 }
 
 export type ThrowRes = {
-    newDices: NewDices,
+    newDices: ChangeDiceObject[],
     moves: number
 }
 
@@ -99,8 +98,7 @@ export enum GameNotExists {
 
 export type RejoinData = {
     type: RejoinType,
-    dices: Dice[],
-    holdDices: Dice[]
+    dices: ChangeDiceObject[],
     playerField: string | null,
     sumField: string | null,
     actPlayer: string,

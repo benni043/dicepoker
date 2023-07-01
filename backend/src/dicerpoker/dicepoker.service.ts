@@ -70,7 +70,7 @@ export class DicepokerService {
     }
 
     changeDices(serverName: string, playerName: string, dices: ChangeDiceObject[]) {
-
+        this.dicerpokerStore.changeDices(serverName, playerName, dices);
     }
 
     getRejoinData(serverName: string, playerName: string): GameNotExists | RejoinData {
@@ -85,7 +85,6 @@ export class DicepokerService {
                 return {
                     type: RejoinType.dice,
                     dices: me.dices,
-                    holdDices: me.holdDices,
                     playerField: null,
                     sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
                     actPlayer: me.playerName,
@@ -95,7 +94,6 @@ export class DicepokerService {
                 return {
                     type: RejoinType.playerField,
                     dices: me.dices,
-                    holdDices: me.holdDices,
                     playerField: JSON.stringify(Array.from(this.dicerpokerStore.getPlayersField(playerName, serverName).entries())),
                     sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
                     actPlayer: me.playerName,
@@ -105,7 +103,6 @@ export class DicepokerService {
                 return {
                     type: RejoinType.sumField,
                     dices: activePlayer.dices,
-                    holdDices: activePlayer.holdDices,
                     playerField: null,
                     sumField: JSON.stringify(Array.from(this.getSumField(serverName, playerName).entries())),
                     actPlayer: activePlayer.playerName,

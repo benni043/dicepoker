@@ -132,29 +132,27 @@ export class DicepokerStore {
     }
 
     changeDices(serverName: string, playerName: string, dices: ChangeDiceObject[]) {
-        let game = this.game.get(serverName)!;
         let player = this.getPlayer(serverName, playerName)!;
 
-        player.
+        player.dices = dices;
     }
 
     setDices(receiveDices: ChangeDiceObject[], playerName: string, serverName: string): ThrowRes {
-        let newDices = []
-        let holdDices = []
+        let newDices: ChangeDiceObject[] = [];
 
         let player = this.getPlayer(serverName, playerName)!;
 
         for (let receiveDice of receiveDices) {
             if (receiveDice.change) {
-                newDices.push(this.getRandomDice());
+                newDices.push({dice: this.getRandomDice(), change: true} as ChangeDiceObject);
             } else {
-                holdDices.push(receiveDice.dice);
+                newDices.push({dice: receiveDice.dice, change: false} as ChangeDiceObject);
             }
         }
 
-        this.setPlayerSettings(serverName, playerName, newDices, holdDices);
+        this.setPlayerSettings(serverName, playerName, newDices);
 
-        return {newDices: {dices: newDices, holdDices: holdDices}, moves: player.movesLeft};
+        return {newDices: newDices, moves: player.movesLeft};
     } //finish
 
     setGameEnd(serverName: string) {
@@ -239,7 +237,11 @@ export class DicepokerStore {
         player.pointsField.sum = player.points;
 
         player.isOnMove = false;
-        player.dices = [Dice.one, Dice.one, Dice.one, Dice.one, Dice.one];
+        player.dices = [{dice: Dice.one, change: true},
+            {dice: Dice.one, change: true},
+            {dice: Dice.one, change: true},
+            {dice: Dice.one, change: true},
+            {dice: Dice.one, change: true}];
 
         opponent.isOnMove = true;
         player.movesLeft = 3;
@@ -296,14 +298,18 @@ export class DicepokerStore {
         return map;
     } //finish
 
-    private setPlayerSettings(serverName: string, playerName: string, dices: Dice[], holdDices: Dice[]): void {
+    private setPlayerSettings(serverName: string, playerName: string, dices: ChangeDiceObject[]): void {
         let player = this.getActivePlayer(serverName)!;
 
         player.dices = dices;
-        player.holdDices = holdDices;
         player.movesLeft--;
 
-        player.pointsFieldTMP = this.calculateSetPointsField([...dices, ...holdDices], player);
+        let dice = []
+        for (let dice1 of player.dices) {
+            dice.push(dice1.dice);
+        }
+
+        player.pointsFieldTMP = this.calculateSetPointsField(dice, player);
     } //finish
 
     private calculateSetPointsField(dices: Dice[], player: Player): PointsField {
@@ -359,19 +365,24 @@ export class DicepokerStore {
             setPoints.sixes = diceCounts[Dice.six] * 6;
         }
 
+        let firstMove = true;
+        for (let dice of player.dices) {
+            if (!dice.change) firstMove = false;
+        }
+
         // Full house
         if (uniqueDiceCount === 2 && diceCounts.some(count => count === 2) && diceCounts.some(count => count === 3)) {
-            player.holdDices.length == 0 ? setPoints.fullHouse = 25 : setPoints.fullHouse = 20;
+            firstMove ? setPoints.fullHouse = 25 : setPoints.fullHouse = 20;
         }
 
         // Street
         if (uniqueDiceCount === 5 && (dices.includes(Dice.one) && dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) || dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) && dices.includes(Dice.six))) {
-            player.holdDices.length == 0 ? setPoints.street = 35 : setPoints.street = 30;
+            firstMove ? setPoints.street = 35 : setPoints.street = 30;
         }
 
         // Poker
         if (uniqueDiceCount === 2 && (diceCounts.some(count => count >= 4))) {
-            player.holdDices.length == 0 ? setPoints.poker = 45 : setPoints.poker = 40;
+            firstMove ? setPoints.poker = 45 : setPoints.poker = 40;
         }
 
         // Grande
@@ -381,7 +392,7 @@ export class DicepokerStore {
 
         // Double Grande
         if (uniqueDiceCount === 1 && (diceCounts.some(count => count === 5))) {
-            player.holdDices.length == 0 ? setPoints.doubleGrande = 100 : setPoints.doubleGrande = 0;
+            firstMove ? setPoints.doubleGrande = 100 : setPoints.doubleGrande = 0;
         }
 
         return setPoints;

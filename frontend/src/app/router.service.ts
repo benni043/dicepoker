@@ -74,8 +74,11 @@ export class RouterService {
     this.socket.on("gameEnd", () => {
       this.error("Das Spiel ist bereits beendet!")
     })
-    this.socket.on("illegalPCArgument", () => {
+    this.socket.on("illegalPlayerArgs", () => {
       this.error("Es muss mindestens einen Spieler geben!")
+    })
+    this.socket.on("gameAlreadyExists", () => {
+      this.error("Dieser Lobbyname ist bereits vergeben!")
     })
 
 

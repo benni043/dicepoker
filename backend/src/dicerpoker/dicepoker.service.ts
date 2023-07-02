@@ -1,6 +1,8 @@
 import {DicepokerStore} from "./dicepoker.store";
 import {
+    Change,
     ChangeDiceObject,
+    Create,
     CreateData,
     Dice,
     GameNotExists,
@@ -26,15 +28,19 @@ export class DicepokerService {
         return this.dicerpokerStore.getAllGames();
     }
 
-    createGame(createData: CreateData) {
+    createGame(createData: CreateData): Create {
         if (createData.playerCount <= 0) {
-            return -1;
+            return Create.illegalPlayer;
         }
+
         let game = this.dicerpokerStore.gameGetter();
 
         if (!game.has(createData.serverName)) {
             this.dicerpokerStore.create(createData);
+            return Create.success;
         }
+
+        return Create.alreadyExists
     }
 
     routerJoin(standardGameData: StandardGameData, ws: Socket): GameNotExists | RejoinData | ReturnEnum {
@@ -69,8 +75,26 @@ export class DicepokerService {
         return ReturnEnum.gameFullErr//todo invalid
     }
 
-    changeDices(serverName: string, playerName: string, dices: ChangeDiceObject[]) {
-        this.dicerpokerStore.changeDices(serverName, playerName, dices);
+    changeDices(serverName: string, playerName: string, dices: ChangeDiceObject[]): Change {
+        let player = this.getPlayer(serverName, playerName);
+
+        let oldDices: Dice[] = [];
+        let newDices: Dice[] = [];
+        for (let dice of player?.dices!) {
+            oldDices.push(dice.dice);
+        }
+
+        for (let dice of dices) {
+            newDices.push(dice.dice);
+        }
+
+        if (oldDices.every((obj) => newDices.includes(obj))) {
+            this.dicerpokerStore.changeDices(serverName, playerName, dices);
+            return Change.success;
+        } else {
+            return Change.illegalArgs;
+        }
+
     }
 
     getRejoinData(serverName: string, playerName: string): GameNotExists | RejoinData {
@@ -335,7 +359,6 @@ export class DicepokerService {
         }
         return true;
     }
-
     checkIfGameEnd(players: Player[]) {
         for (let player of players) {
             for (const [key, value] of Object.entries(player.pointsField)) {
@@ -423,7 +446,6 @@ export class DicepokerService {
             return winner;
         }
     }
-
     getActivePlayer(serverName: string) {
         let game = this.dicerpokerStore.getGame(serverName);
 

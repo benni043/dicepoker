@@ -4,6 +4,8 @@ import * as http from "http";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
+    Change,
+    Create,
     CreateData,
     End,
     GameNotExists,
@@ -16,7 +18,8 @@ import {
     SetPointData,
     SetSuccess,
     StandardGameData,
-    ThrowData, UpdateDices
+    ThrowData,
+    UpdateDices
 } from "../game";
 import path from "path";
 
@@ -42,7 +45,7 @@ export class DicepokerRouter {
             let playerName: string
             let serverName: string
 
-            ws.emit("isInGame")
+            ws.emit("isInGame");
 
             ws.on("getAllGames", () => {
                 ws.emit("getGames", this.dicepokerService.getAllGames());
@@ -51,8 +54,13 @@ export class DicepokerRouter {
             ws.on("createGame", (createGameData: CreateData) => {
                 let res = this.dicepokerService.createGame(createGameData);
 
-                if (res == -1) ws.emit("illegalPCArgument")
-                this.socketIO.emit("getGames", this.dicepokerService.getAllGames());
+                if (res == Create.illegalPlayer) {
+                    ws.emit("illegalPlayerArgs");
+                } else if (res == Create.alreadyExists) {
+                    ws.emit("gameAlreadyExists");
+                } else {
+                    this.socketIO.emit("getGames", this.dicepokerService.getAllGames());
+                }
             })
 
             ws.on("joinToGame", (standardGameData: StandardGameData) => {
@@ -90,10 +98,14 @@ export class DicepokerRouter {
 
             ws.on("sendNewDices", (data: UpdateDices) => {
                 let players: Player[] = this.dicepokerService.getPlayers(data.standardGameData.serverName);
-                this.dicepokerService.changeDices(data.standardGameData.serverName, data.standardGameData.playerName, data.dices);
+                let res = this.dicepokerService.changeDices(data.standardGameData.serverName, data.standardGameData.playerName, data.dices);
 
-                for (let player of players) {
-                    player.socket?.emit("newChangedDices", (data.dices))
+                if (res == Change.illegalArgs) {
+                    ws.emit("illegalDiceArgs");
+                } else {
+                    for (let player of players) {
+                        player.socket?.emit("newChangedDices", (data.dices))
+                    }
                 }
             }) //finish
 

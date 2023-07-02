@@ -31,11 +31,6 @@ export type ThrowRes = {
     moves: number
 }
 
-export type NewDices = {
-    dices: Dice[],
-    holdDices: Dice[]
-}
-
 export enum Dice {
     one ,
     two ,
@@ -72,6 +67,17 @@ export enum SetError {
     unknownPlayer = "unknownPlayer",
     wrongPlayer = "wrongPlayer",
     fieldFull = "fieldFull"
+}
+
+export enum Create {
+    illegalPlayer,
+    alreadyExists,
+    success
+}
+
+export enum Change {
+    illegalArgs,
+    success
 }
 
 export enum SetSuccess {

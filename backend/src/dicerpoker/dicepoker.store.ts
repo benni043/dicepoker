@@ -159,13 +159,6 @@ export class DicepokerStore {
         this.game.get(serverName)!.state = GameState.finished;
     } //finish
 
-    getIndexToPlayer(players: Player[], playerName: string) {
-        for (let i = 0; i < players.length; i++) {
-            if (players[i].playerName == playerName) return i;
-        }
-        return -1;
-    }
-
     getNextValue(players: Player[], player: Player) {
         const currentIndex = players.indexOf(player);
         const nextIndex = (currentIndex + 1) % players.length; // Verwendet den Modulo-Operator, um sicherzustellen, dass der Index innerhalb der Array-Grenzen bleibt

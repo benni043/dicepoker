@@ -18,7 +18,7 @@ export class DisplayDiceNewComponent{
   switch(index: number) {
     if (this.canMove()) {
       this.changeDices[index].change = !this.changeDices[index].change;
-      this.routerService.switchedDice(this.changeDices);
+      this.routerService.changedDices(this.changeDices);
     }
   }
 
@@ -31,6 +31,6 @@ export class DisplayDiceNewComponent{
   }
 
   canMove() {
-    return this.routerService.activePlayer == this.routerService.playerName && !this.routerService.throwEnd && !this.routerService.end && !this.routerService.firstMove;
+    return this.routerService.activePlayer == this.routerService.playerName && !this.routerService.throwEnd && !this.routerService.gameEnd && !this.routerService.firstMove;
   }
 }

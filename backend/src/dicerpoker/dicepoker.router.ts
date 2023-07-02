@@ -4,12 +4,10 @@ import * as http from "http";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
-    ChangeDiceObject,
     CreateData,
     End,
     GameNotExists,
     GetError,
-    NewDices,
     Player,
     PointsField,
     RejoinData,
@@ -43,6 +41,8 @@ export class DicepokerRouter {
         this.socketIO.on("connection", (ws) => {
             let playerName: string
             let serverName: string
+
+            ws.emit("isInGame")
 
             ws.on("getAllGames", () => {
                 ws.emit("getGames", this.dicepokerService.getAllGames());
@@ -198,11 +198,10 @@ export class DicepokerRouter {
             ws.on("disconnect", () => {
                 this.dicepokerService.routerDisconnect(playerName, serverName);
             }) //finish
-
         });
 
         this.server.listen(this.port, () => {
-            console.log(`started dicepoker on port ${this.port}`)
+            console.log(`started dicepoker on port ${this.port}`);
         }) //finish
     }
 }

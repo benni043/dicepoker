@@ -32,6 +32,12 @@ export class RouterService {
   constructor() {
     this.socket = connect(environment.apiURL);
 
+    this.socket.on("isInGame", () => {
+      if (this.playerName != "" && this.serverName != "") {
+        this.socket.emit("joinToGame", {serverName: this.serverName, playerName: this.playerName});
+      }
+    })
+
     this.socket.emit("getAllGames");
 
     this.socket.on("gameFullErr", () => {
@@ -77,7 +83,7 @@ export class RouterService {
 
       switch (rejoinData.type) {
         case RejoinType.playerField: {
-          this.bools = this.fillBools(new Map(JSON.parse(rejoinData.sumField!)), this.playerName);
+          this.booleans = this.fillBooleans(new Map(JSON.parse(rejoinData.sumField!)), this.playerName);
           this.playersField = new Map(JSON.parse(rejoinData.playerField!));
           this.activePlayer = rejoinData.actPlayer;
           break
@@ -97,7 +103,7 @@ export class RouterService {
 
       this.throwEnd = rejoinData.moves == 0;
       this.firstMove = rejoinData.moves == 3;
-      this.changeDices = rejoinData.dices;
+      this.dices = rejoinData.dices;
     })
 
     this.socket.on("joinSuccess", (sumField: { sumField: any }) => {
@@ -116,7 +122,7 @@ export class RouterService {
       this.firstMove = true;
       this.movesLeft = 3;
 
-      this.changeDices = [
+      this.dices = [
         {dice: Dice.one, change: true},
         {dice: Dice.one, change: true},
         {dice: Dice.one, change: true},
@@ -125,7 +131,7 @@ export class RouterService {
     })
 
     this.socket.on("newDices", (res: ThrowRes) => {
-      this.changeDices = res.newDices;
+      this.dices = res.newDices;
 
       this.movesLeft = res.moves;
 
@@ -147,7 +153,7 @@ export class RouterService {
       map.get(this.playerName)!.sum! = this.sumField!.get(this.playerName)?.sum!;
       let name = map.entries().next().value[0];
 
-      this.bools = this.fillBools(this.sumField!, name)
+      this.booleans = this.fillBooleans(this.sumField!, name)
 
       this.sumField = null;
       this.playersField = null;
@@ -172,7 +178,7 @@ export class RouterService {
       setTimeout(() => {
         this.sumField = map;
 
-        if (!this.end) {
+        if (!this.gameEnd) {
           this.socket.emit("getActivePlayer", {
             serverName: this.serverName,
             playerName: this.playerName
@@ -182,14 +188,14 @@ export class RouterService {
     })
 
     this.socket.on("end", (end: End) => {
-      this.end = true;
+      this.gameEnd = true;
       this.sumField = new Map(JSON.parse(end.sumField));
       this.playersField = null;
       this.winner = end.winner;
     })
 
     this.socket.on("newChangedDices", (dices: ChangeDiceObject[]) => {
-      this.changeDices = dices;
+      this.dices = dices;
     });
 
     this.socket.on("getGames", (games) => {
@@ -206,14 +212,14 @@ export class RouterService {
   playerName: string = "";
   serverName: string = "";
 
-  bools: boolean[] = [];
+  booleans: boolean[] = [];
 
   sumField!: Map<string, PointsField> | null;
   playersField!: Map<string, PointsField> | null;
 
   joined: boolean = false;
   throwEnd: boolean = false;
-  end: boolean = false;
+  gameEnd: boolean = false;
 
   firstMove: boolean = true;
 
@@ -222,7 +228,7 @@ export class RouterService {
   createGame: boolean = false;
   joinGame: boolean = false;
 
-  changeDices: ChangeDiceObject[] = [
+  dices: ChangeDiceObject[] = [
     {dice: Dice.one, change: true},
     {dice: Dice.one, change: true},
     {dice: Dice.one, change: true},
@@ -237,7 +243,7 @@ export class RouterService {
     this.joinGame = !this.joinGame;
   }
 
-  fillBools(sumField: Map<string, PointsField>, name: string) {
+  fillBooleans(sumField: Map<string, PointsField>, name: string) {
     let bools: boolean[] = []
 
     for (const [key, value] of Object.entries(sumField?.get(name)!)) {
@@ -279,7 +285,7 @@ export class RouterService {
     } as StandardGameData));
   }
 
-  switchedDice(dices: ChangeDiceObject[]) {
+  changedDices(dices: ChangeDiceObject[]) {
     this.socket.emit("sendNewDices", {
       dices: dices,
       standardGameData: {serverName: this.serverName, playerName: this.playerName}

@@ -13,6 +13,7 @@ import {
   StandardGameData,
   ThrowRes, UpdateDices
 } from "./utils/game";
+import {CookieService} from "ngx-cookie-service";
 
 @Injectable({
   providedIn: 'root'
@@ -29,11 +30,11 @@ export class RouterService {
     }, 100)
   }
 
-  constructor() {
+  constructor(private cookieService: CookieService) {
     this.socket = connect(environment.apiURL);
 
     this.socket.on("isInGame", () => {
-      if (this.playerName != "" && this.serverName != "") {
+      if (this.cookieService.get("playerName") != null && this.cookieService.get("serverName") != null) {
         this.socket.emit("joinToGame", {serverName: this.serverName, playerName: this.playerName});
       }
     })
@@ -192,6 +193,15 @@ export class RouterService {
       this.sumField = new Map(JSON.parse(end.sumField));
       this.playersField = null;
       this.winner = end.winner;
+      this.playerName = "";
+      this.serverName = "";
+      this.cookieService.deleteAll("/");
+      this.dices = [
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true},
+        {dice: Dice.one, change: true}];
     })
 
     this.socket.on("newChangedDices", (dices: ChangeDiceObject[]) => {
@@ -228,12 +238,7 @@ export class RouterService {
   createGame: boolean = false;
   joinGame: boolean = false;
 
-  dices: ChangeDiceObject[] = [
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true},
-    {dice: Dice.one, change: true}];
+  dices: ChangeDiceObject[] = [];
 
   toggleCreateGame() {
     this.createGame = !this.createGame;
@@ -260,6 +265,9 @@ export class RouterService {
   join(playerName: string, serverName: string) {
     this.playerName = playerName;
     this.serverName = serverName;
+
+    this.cookieService.set("playerName", playerName);
+    this.cookieService.set("serverName", serverName);
 
     this.socket.emit("joinToGame", {serverName: serverName, playerName: playerName});
   }

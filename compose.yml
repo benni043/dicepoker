@@ -1,0 +1,7 @@
+version: '3.3'
+services:
+  dicepoker:
+    build: .
+    container_name: dicepoker
+    ports:
+      - "3000:3001"

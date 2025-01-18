@@ -1,19 +1,12 @@
-import express from "express";
-import cors from "cors";
-import * as http from "http";
+import express, {Router} from "express";
 import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
     Change,
-    Create,
-    CreateData,
     End,
-    GameNotExists,
     GetError,
     Player,
     PointsField,
-    RejoinData,
-    ReturnEnum,
     SetError,
     SetPointData,
     SetSuccess,
@@ -21,80 +14,20 @@ import {
     ThrowData,
     UpdateDices
 } from "../game";
-import path from "path";
 
 export class DicepokerRouter {
 
+    router = Router();
     dicepokerService: DicepokerService = new DicepokerService();
 
-    app = express();
-    server = http.createServer(this.app);
-    socketIO = new Server(this.server, {cors: {origin: true}, pingInterval: 5000});
-    port = 3000;
+    constructor(app: express.Application, socketIO: Server) {
+        app.use("/dicepoker", this.router)
 
-    constructor() {
-        this.app.use(cors());
-
-        this.app.use(express.static(path.join(__dirname, '../../../frontend/dist/frontend')));
-        this.app.get('/', (req, res) => {
-            res.sendFile(path.join(__dirname, '../../../frontend/dist/frontend/index.html'));
-            res.end()
-        });
-
-        this.socketIO.on("connection", (ws) => {
+        socketIO.of('/dicepoker').on("connection", (ws) => {
             let playerName: string
             let serverName: string
 
-            ws.emit("isInGame");
-
-            ws.on("getAllGames", () => {
-                ws.emit("getGames", this.dicepokerService.getAllGames());
-            })
-
-            ws.on("createGame", (createGameData: CreateData) => {
-                let res = this.dicepokerService.createGame(createGameData);
-
-                if (res == Create.illegalPlayer) {
-                    ws.emit("illegalPlayerArgs");
-                } else if (res == Create.alreadyExists) {
-                    ws.emit("gameAlreadyExists");
-                } else {
-                    this.socketIO.emit("getGames", this.dicepokerService.getAllGames());
-                }
-            })
-
-            ws.on("joinToGame", (standardGameData: StandardGameData) => {
-                let res = this.dicepokerService.routerJoin(standardGameData, ws);
-                let players = this.dicepokerService.getPlayers(standardGameData.serverName);
-
-                if (res == GameNotExists.gameNotExistsError) {
-                    ws.emit("gameNotExistsErr");
-                } else if (res == ReturnEnum.gameFullErr) {
-                    ws.emit("gameFullErr")
-                } else if (res == ReturnEnum.illegalPlayerErr) {
-                    ws.emit("illegalPlayerErr")
-                } else if (res == ReturnEnum.gameEnd) {
-                    ws.emit("gameEnd")
-                } else if (res == ReturnEnum.joinSuccess) {
-                    playerName = standardGameData.playerName
-                    serverName = standardGameData.serverName;
-
-                    let sumField = this.dicepokerService.getSumField(serverName, playerName)
-
-                    for (let player of players) {
-                        if (player.socket != undefined) {
-                            player.socket?.emit("joinSuccess", {sumField: JSON.stringify(Array.from(sumField.entries()))})
-                        }
-                    }
-                } else if (typeof res === "object") {
-                    playerName = standardGameData.playerName
-                    serverName = standardGameData.serverName;
-
-                    let rejoinData: RejoinData = res;
-
-                    ws.emit("rejoin", (rejoinData))
-                }
-            });
+            console.log(`${ws} connected to game`);
 
             ws.on("sendNewDices", (data: UpdateDices) => {
                 let players: Player[] = this.dicepokerService.getPlayers(data.standardGameData.serverName);
@@ -211,9 +144,5 @@ export class DicepokerRouter {
                 this.dicepokerService.routerDisconnect(playerName, serverName);
             }) //finish
         });
-
-        this.server.listen(this.port, () => {
-            console.log(`started dicepoker on port ${this.port}`);
-        }) //finish
     }
 }

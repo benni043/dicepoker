@@ -22,45 +22,40 @@ export class RouterService {
 
   errorMSG: string = "";
 
-  error(msg: string) {
-    this.errorMSG = "";
+  socket!: Socket;
+  movesLeft: number = 3;
 
-    setTimeout(() => {
-      this.errorMSG = msg;
-    }, 100)
-  }
+  activePlayer: string = "";
+  winner: string = "";
+
+  playerName: string = "";
+  serverName: string = "";
+
+  booleans: boolean[] = [];
+
+  sumField!: Map<string, PointsField> | null;
+  playersField!: Map<string, PointsField> | null;
+
+  joined: boolean = false;
+  throwEnd: boolean = false;
+  gameEnd: boolean = false;
+
+  firstMove: boolean = true;
+
+  dices: ChangeDiceObject[] = [];
 
   constructor(private cookieService: CookieService) {
-    this.socket = connect(environment.apiURL);
+    this.socket = connect(`${environment.apiURL}/dicepoker`);
 
-    this.socket.on("isInGame", () => {
-      if (this.cookieService.get("playerName") != null && this.cookieService.get("serverName") != null) {
-        this.socket.emit("joinToGame", {serverName: this.serverName, playerName: this.playerName});
-      }
-    })
 
-    this.socket.emit("getAllGames");
-
-    this.socket.on("gameFullErr", () => {
-      this.error("Das Spiel ist voll!");
-    })
     this.socket.on("gameNotStarted", () => {
       console.error("gameNotStarted");
     })
     this.socket.on("gameNotExists", () => {
       console.error("gameNotExists");
     })
-    this.socket.on("gameFinished", () => {
-      this.error("Das Spiel ist bereits beendet!");
-    })
-    this.socket.on("unknownPlayer", () => {
-      this.error("Dieser Name ist bereits vergeben!")
-    })
     this.socket.on("wrongPlayer", () => {
       console.error("wrongPlayer")
-    })
-    this.socket.on("illegalPlayerErr", () => {
-      this.error("Dieser Name ist bereits vergeben!")
     })
     this.socket.on("turnIsOver", () => {
       this.error("Du hast bereits 3 mal gewürfelt!");
@@ -68,17 +63,8 @@ export class RouterService {
     this.socket.on("fieldFull", () => {
       this.error("Dieses Feld ist bereits belegt!")
     })
-    this.socket.on("gameNotExistsErr", () => {
-      this.error("Dieser Server ist voll!");
-    })
-    this.socket.on("gameEnd", () => {
-      this.error("Das Spiel ist bereits beendet!")
-    })
     this.socket.on("illegalPlayerArgs", () => {
       this.error("Es muss mindestens einen Spieler geben!")
-    })
-    this.socket.on("gameAlreadyExists", () => {
-      this.error("Dieser Lobbyname ist bereits vergeben!")
     })
 
 
@@ -210,45 +196,14 @@ export class RouterService {
     this.socket.on("newChangedDices", (dices: ChangeDiceObject[]) => {
       this.dices = dices;
     });
-
-    this.socket.on("getGames", (games) => {
-      this.games = games;
-    })
   }
 
-  socket!: Socket;
-  movesLeft: number = 3;
+  error(msg: string) {
+    this.errorMSG = "";
 
-  activePlayer: string = "";
-  winner: string = "";
-
-  playerName: string = "";
-  serverName: string = "";
-
-  booleans: boolean[] = [];
-
-  sumField!: Map<string, PointsField> | null;
-  playersField!: Map<string, PointsField> | null;
-
-  joined: boolean = false;
-  throwEnd: boolean = false;
-  gameEnd: boolean = false;
-
-  firstMove: boolean = true;
-
-  games: string[] = [];
-
-  createGame: boolean = false;
-  joinGame: boolean = false;
-
-  dices: ChangeDiceObject[] = [];
-
-  toggleCreateGame() {
-    this.createGame = !this.createGame;
-  }
-
-  toggleJoinGame() {
-    this.joinGame = !this.joinGame;
+    setTimeout(() => {
+      this.errorMSG = msg;
+    }, 100)
   }
 
   fillBooleans(sumField: Map<string, PointsField>, name: string) {
@@ -263,21 +218,6 @@ export class RouterService {
     }
 
     return bools;
-  }
-
-  join(playerName: string, serverName: string) {
-    this.playerName = playerName;
-    this.serverName = serverName;
-
-    this.cookieService.set("playerName", playerName);
-    this.cookieService.set("serverName", serverName);
-
-    this.socket.emit("joinToGame", {serverName: serverName, playerName: playerName});
-  }
-
-  create(serverName: string, playerCount: number) {
-    this.socket.emit("createGame", {serverName: serverName, playerCount: playerCount});
-    this.toggleCreateGame();
   }
 
   sendValue(elem: string) {

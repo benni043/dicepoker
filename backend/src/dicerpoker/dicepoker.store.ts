@@ -161,7 +161,7 @@ export class DicepokerStore {
 
     getNextValue(players: Player[], player: Player) {
         const currentIndex = players.indexOf(player);
-        const nextIndex = (currentIndex + 1) % players.length; // Verwendet den Modulo-Operator, um sicherzustellen, dass der Index innerhalb der Array-Grenzen bleibt
+        const nextIndex = (currentIndex + 1) % players.length;
         return players[nextIndex];
     }
 
@@ -335,34 +335,22 @@ export class DicepokerStore {
         const uniqueDiceCount = diceCounts.filter(count => count > 0).length;
 
         // Ones
-        if (diceCounts[Dice.one] > 0) {
-            setPoints.ones = diceCounts[Dice.one];
-        }
+        if (diceCounts[Dice.one] > 0) setPoints.ones = diceCounts[Dice.one];
 
         // Twos
-        if (diceCounts[Dice.two] > 0) {
-            setPoints.twos = diceCounts[Dice.two] * 2;
-        }
+        if (diceCounts[Dice.two] > 0) setPoints.twos = diceCounts[Dice.two] * 2;
 
         // Threes
-        if (diceCounts[Dice.three] > 0) {
-            setPoints.threes = diceCounts[Dice.three] * 3;
-        }
+        if (diceCounts[Dice.three] > 0) setPoints.threes = diceCounts[Dice.three] * 3;
 
         // Fours
-        if (diceCounts[Dice.four] > 0) {
-            setPoints.fours = diceCounts[Dice.four] * 4;
-        }
+        if (diceCounts[Dice.four] > 0) setPoints.fours = diceCounts[Dice.four] * 4;
 
         // Fives
-        if (diceCounts[Dice.five] > 0) {
-            setPoints.fives = diceCounts[Dice.five] * 5;
-        }
+        if (diceCounts[Dice.five] > 0) setPoints.fives = diceCounts[Dice.five] * 5;
 
         // Sixes
-        if (diceCounts[Dice.six] > 0) {
-            setPoints.sixes = diceCounts[Dice.six] * 6;
-        }
+        if (diceCounts[Dice.six] > 0) setPoints.sixes = diceCounts[Dice.six] * 6;
 
         let firstMove = true;
         for (let dice of player.dices) {
@@ -370,29 +358,20 @@ export class DicepokerStore {
         }
 
         // Full house
-        if (uniqueDiceCount === 2 && diceCounts.some(count => count === 2) && diceCounts.some(count => count === 3)) {
-            firstMove ? setPoints.fullHouse = 25 : setPoints.fullHouse = 20;
-        }
+        if (uniqueDiceCount === 2 && diceCounts.some(count => count === 2) && diceCounts.some(count => count === 3)) firstMove ? setPoints.fullHouse = 25 : setPoints.fullHouse = 20;
 
         // Street
-        if (uniqueDiceCount === 5 && (dices.includes(Dice.one) && dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) || dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) && dices.includes(Dice.six))) {
+        if (uniqueDiceCount === 5 && (dices.includes(Dice.one) && dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) || dices.includes(Dice.two) && dices.includes(Dice.three) && dices.includes(Dice.four) && dices.includes(Dice.five) && dices.includes(Dice.six)))
             firstMove ? setPoints.street = 35 : setPoints.street = 30;
-        }
 
         // Poker
-        if (uniqueDiceCount === 2 && (diceCounts.some(count => count >= 4))) {
-            firstMove ? setPoints.poker = 45 : setPoints.poker = 40;
-        }
+        if (uniqueDiceCount === 2 && (diceCounts.some(count => count >= 4))) firstMove ? setPoints.poker = 45 : setPoints.poker = 40;
 
         // Grande
-        if (uniqueDiceCount === 1 && (diceCounts.some(count => count === 5))) {
-            setPoints.grande = 50;
-        }
+        if (uniqueDiceCount === 1 && (diceCounts.some(count => count === 5))) setPoints.grande = 50;
 
         // Double Grande
-        if (uniqueDiceCount === 1 && (diceCounts.some(count => count === 5))) {
-            firstMove ? setPoints.doubleGrande = 100 : setPoints.doubleGrande = 0;
-        }
+        if (uniqueDiceCount === 1 && (diceCounts.some(count => count === 5))) firstMove ? setPoints.doubleGrande = 100 : setPoints.doubleGrande = 0;
 
         return setPoints;
     } //finish
@@ -404,9 +383,7 @@ export class DicepokerStore {
         game.numberOfPlayersWhoLeft++;
         player.isOnline = false;
 
-        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == game.numberOfPlayersJoined) {
-            this.game.delete(serverName);
-        }
+        if (game.state == GameState.joining || game.numberOfPlayersWhoLeft == game.numberOfPlayersJoined) this.game.delete(serverName);
     } //finish
 
 

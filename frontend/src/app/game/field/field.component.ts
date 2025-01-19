@@ -1,6 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {RouterService} from "../router.service";
-import {PointsField} from "../utils/game";
+import {RouterService} from "../../router.service";
+import {PointsField} from "../../utils/game";
 
 @Component({
   selector: 'app-field',

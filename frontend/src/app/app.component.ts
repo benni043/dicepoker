@@ -11,12 +11,5 @@ export class AppComponent {
 
   title = 'frontend';
 
-  constructor(public routerService: RouterService, public lobbyRouterService: LobbyRouterService) {
-  }
 
-  newGame: boolean = false;
-
-  back() {
-    window.location.reload()
-  }
 }

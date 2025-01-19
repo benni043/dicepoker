@@ -14,8 +14,6 @@ export class LobbyRouter {
         socketIO.of('/lobby').on('connection', (ws: Socket) => {
             console.log(`${ws.id} connected to lobby`);
 
-            ws.join("lobby");
-
             ws.emit("isInGame");
 
             ws.on("getAllGames", () => {
@@ -30,7 +28,7 @@ export class LobbyRouter {
                 } else if (res == Create.alreadyExists) {
                     ws.emit("gameAlreadyExists");
                 } else {
-                    socketIO.to('lobby').emit("getGames", this.dicepokerService.getAllGames());
+                    socketIO.of('/lobby').emit("getGames", this.dicepokerService.getAllGames());
                 }
             })
 

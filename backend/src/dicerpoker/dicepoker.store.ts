@@ -14,7 +14,16 @@ import {Socket} from "socket.io";
 
 export class DicepokerStore {
 
+    private static instance: DicepokerStore;
+
     private game: Map<string, Game> = new Map();
+
+    public static getInstance(): DicepokerStore {
+        if (!DicepokerStore.instance) {
+            DicepokerStore.instance = new DicepokerStore();
+        }
+        return DicepokerStore.instance;
+    }
 
     gameGetter() {
         return this.game;

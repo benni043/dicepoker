@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import {LobbyRouterService} from "../../lobby-router.service";
+import {Component, OnInit} from '@angular/core';
+import {LobbyRouterService} from "../lobby-router.service";
 import {Router} from "@angular/router";
 
 @Component({
@@ -7,9 +7,15 @@ import {Router} from "@angular/router";
   templateUrl: './lobby.component.html',
   styleUrls: ['./lobby.component.scss']
 })
-export class LobbyComponent {
+export class LobbyComponent implements OnInit {
 
   constructor(public lobbyRouterService: LobbyRouterService, private router: Router) {
+  }
+
+  ngOnInit(): void {
+    if (this.lobbyRouterService.socket == null) {
+      this.lobbyRouterService.connect();
+    }
   }
 
   createGame() {

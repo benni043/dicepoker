@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {LobbyRouterService} from "../../lobby-router.service";
+import {LobbyRouterService} from "../lobby-router.service";
 import {Router} from "@angular/router";
 
 @Component({

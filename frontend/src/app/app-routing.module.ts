@@ -10,7 +10,7 @@ const routes: Routes = [
   {path: '', component: LobbyComponent},
   {path: 'create_game', component: CreateComponent},
   {path: 'join_game/:id', component: JoinComponent},
-  {path: 'game', component: GameComponent},
+  {path: 'game/:id', component: GameComponent},
   {path: '**', component: NotFoundComponent},
 ];
 

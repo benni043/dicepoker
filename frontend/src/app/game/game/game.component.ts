@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
-import {RouterService} from "../../router.service";
-import {Router} from "@angular/router";
+import {Component} from '@angular/core';
+import {RouterService} from "../router.service";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-game',
@@ -9,10 +9,15 @@ import {Router} from "@angular/router";
 })
 export class GameComponent {
 
-  constructor(public routerService: RouterService, private router: Router) {
+  constructor(public routerService: RouterService, private router: Router, private route: ActivatedRoute) {
+    this.routerService.serverName = this.route.snapshot.paramMap.get('id')!;
+    this.routerService.playerName = this.route.snapshot.queryParamMap.get('playerName')!;
+
+    this.routerService.joinGame();
   }
 
   leaveGame() {
+    this.routerService.socket.disconnect();
     this.router.navigate(['/']).then();
   }
 

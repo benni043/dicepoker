@@ -1,5 +1,5 @@
 import {Component, Input, OnInit} from '@angular/core';
-import {RouterService} from "../../router.service";
+import {RouterService} from "../router.service";
 import {ChangeDiceObject, Dice} from "../../utils/game";
 
 @Component({

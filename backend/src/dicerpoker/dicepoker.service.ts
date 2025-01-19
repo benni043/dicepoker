@@ -22,7 +22,16 @@ import {Socket} from "socket.io";
 
 export class DicepokerService {
 
-    private dicerpokerStore: DicepokerStore = new DicepokerStore();
+    private static instance: DicepokerService;
+
+    private dicerpokerStore: DicepokerStore = DicepokerStore.getInstance();
+
+    public static getInstance(): DicepokerService {
+        if (!DicepokerService.instance) {
+            DicepokerService.instance = new DicepokerService();
+        }
+        return DicepokerService.instance;
+    }
 
     getAllGames() {
         return this.dicerpokerStore.getAllGames();
@@ -359,6 +368,7 @@ export class DicepokerService {
         }
         return true;
     }
+
     checkIfGameEnd(players: Player[]) {
         for (let player of players) {
             for (const [key, value] of Object.entries(player.pointsField)) {
@@ -446,6 +456,7 @@ export class DicepokerService {
             return winner;
         }
     }
+
     getActivePlayer(serverName: string) {
         let game = this.dicerpokerStore.getGame(serverName);
 

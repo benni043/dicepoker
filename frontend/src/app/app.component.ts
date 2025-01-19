@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
-import {RouterService} from "./router.service";
-import {LobbyRouterService} from "./lobby-router.service";
+import {RouterService} from "./game/router.service";
+import {LobbyRouterService} from "./lobby/lobby-router.service";
 
 @Component({
   selector: 'app-root',

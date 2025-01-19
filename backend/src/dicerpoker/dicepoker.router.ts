@@ -3,10 +3,10 @@ import {Server} from "socket.io";
 import {DicepokerService} from "./dicepoker.service";
 import {
     Change,
-    End,
+    End, GameNotExists,
     GetError,
     Player,
-    PointsField,
+    PointsField, RejoinData, ReturnEnum,
     SetError,
     SetPointData,
     SetSuccess,
@@ -18,7 +18,7 @@ import {
 export class DicepokerRouter {
 
     router = Router();
-    dicepokerService: DicepokerService = new DicepokerService();
+    dicepokerService: DicepokerService = DicepokerService.getInstance();
 
     constructor(app: express.Application, socketIO: Server) {
         app.use("/dicepoker", this.router)
@@ -27,7 +27,40 @@ export class DicepokerRouter {
             let playerName: string
             let serverName: string
 
-            console.log(`${ws} connected to game`);
+            console.log(`${ws.id} connected to game`);
+
+            ws.on("joinToGame", (standardGameData: StandardGameData) => {
+                let res = this.dicepokerService.routerJoin(standardGameData, ws);
+                let players = this.dicepokerService.getPlayers(standardGameData.serverName);
+
+                if (res == GameNotExists.gameNotExistsError) {
+                    ws.emit("gameNotExistsErr");
+                } else if (res == ReturnEnum.gameFullErr) {
+                    ws.emit("gameFullErr")
+                } else if (res == ReturnEnum.illegalPlayerErr) {
+                    ws.emit("illegalPlayerErr")
+                } else if (res == ReturnEnum.gameEnd) {
+                    ws.emit("gameEnd")
+                } else if (res == ReturnEnum.joinSuccess) {
+                    playerName = standardGameData.playerName
+                    serverName = standardGameData.serverName;
+
+                    let sumField = this.dicepokerService.getSumField(serverName, playerName)
+
+                    for (let player of players) {
+                        if (player.socket != undefined) {
+                            player.socket?.emit("joinSuccess", {sumField: JSON.stringify(Array.from(sumField.entries()))})
+                        }
+                    }
+                } else if (typeof res === "object") {
+                    playerName = standardGameData.playerName
+                    serverName = standardGameData.serverName;
+
+                    let rejoinData: RejoinData = res;
+
+                    ws.emit("rejoin", (rejoinData))
+                }
+            });
 
             ws.on("sendNewDices", (data: UpdateDices) => {
                 let players: Player[] = this.dicepokerService.getPlayers(data.standardGameData.serverName);
@@ -141,6 +174,7 @@ export class DicepokerRouter {
             }) //finish
 
             ws.on("disconnect", () => {
+                console.log(`${ws.id} disconnected from game`);
                 this.dicepokerService.routerDisconnect(playerName, serverName);
             }) //finish
         });

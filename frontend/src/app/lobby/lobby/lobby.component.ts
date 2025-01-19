@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import {RouterService} from "../../router.service";
 import {LobbyRouterService} from "../../lobby-router.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-lobby',
@@ -9,13 +9,15 @@ import {LobbyRouterService} from "../../lobby-router.service";
 })
 export class LobbyComponent {
 
-  constructor(public routerService: RouterService, public lobbyRouterService: LobbyRouterService) {
+  constructor(public lobbyRouterService: LobbyRouterService, private router: Router) {
   }
 
-  newGame: boolean = false;
+  createGame() {
+    this.router.navigate(['/create_game']).then();
+  }
 
-  back() {
-    window.location.reload()
+  joinGame(gameID: string) {
+    this.router.navigate(['/join_game', gameID]).then();
   }
 
 }

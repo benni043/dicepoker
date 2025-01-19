@@ -13,6 +13,7 @@ import { DisplayDiceNewComponent } from './game/display-dice-new/display-dice-ne
 import { AppRoutingModule } from './app-routing.module';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { LobbyComponent } from './lobby/lobby/lobby.component';
+import {GameComponent} from "./game/game/game.component";
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { LobbyComponent } from './lobby/lobby/lobby.component';
     AlertComponent,
     DisplayDiceNewComponent,
     NotFoundComponent,
-    LobbyComponent
+    LobbyComponent,
+    GameComponent
   ],
     imports: [
         BrowserModule,

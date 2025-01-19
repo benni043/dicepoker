@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import {RouterService} from "../../router.service";
 import {LobbyRouterService} from "../../lobby-router.service";
+import {ActivatedRoute, Router} from "@angular/router";
 
 @Component({
   selector: 'app-join',
@@ -10,18 +10,18 @@ import {LobbyRouterService} from "../../lobby-router.service";
 export class JoinComponent {
 
   playerName: string = "";
-  serverName: string = "";
+  gameId: string = "";
 
-  constructor(public routerService: RouterService, public lobbyRouterService: LobbyRouterService) {
+  constructor(public lobbyRouterService: LobbyRouterService, private router: Router, private route: ActivatedRoute) {
+    this.gameId = this.route.snapshot.paramMap.get('id')!;
   }
 
   join() {
-    this.lobbyRouterService.join(this.playerName, this.serverName);
+    this.lobbyRouterService.join(this.playerName, this.gameId);
   }
 
-  start(serverName: string) {
-    this.serverName = serverName;
-    this.lobbyRouterService.toggleJoinGame();
+  cancel() {
+    this.router.navigate(['/']).then();
   }
 
 }

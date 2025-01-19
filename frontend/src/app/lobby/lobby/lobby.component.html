@@ -1,38 +1,19 @@
-<div id="backendErr" *ngIf="routerService.errorMSG != ''">
-  <app-alert [message]="routerService.errorMSG"></app-alert>
+<div id="backendErr" *ngIf="lobbyRouterService.errorMSG != ''">
+  <app-alert [message]="lobbyRouterService.errorMSG"></app-alert>
 </div>
 
-<div>
-  <div *ngIf="lobbyRouterService.createGame">
-    <app-create *ngIf="!routerService.joined"></app-create>
-  </div>
+<div class="capture">
+  <button class="create" (click)="createGame()">
+    Spiel erstellen
+  </button>
 
-  <app-join *ngIf="!routerService.joined"></app-join>
-</div>
+  <br>
+  <br>
+  <br>
 
-<div class="container">
-  <div *ngIf="routerService.joined">
-    <div class="center">
-      <button class="leave" (click)="back()">Verlassen</button>
-
-      <div class="field">
-        <app-field [readonlyV]="true" [map]="routerService.sumField!"
-                   *ngIf="routerService.sumField != undefined"></app-field>
-        <app-field [readonlyV]="false" [bools]="routerService.booleans" [map]="routerService.playersField!"
-                   *ngIf="routerService.playersField != undefined"></app-field>
-      </div>
-
-      <div class="dice" id="outer">
-        <div class="data">
-          <h2 *ngIf="routerService.gameEnd">Gewinner: {{routerService.winner}}</h2>
-          <h2 *ngIf="!routerService.gameEnd">Aktueller Spieler: {{routerService.activePlayer}}</h2>
-          <h2 *ngIf="!routerService.gameEnd">Spielzüge: {{routerService.movesLeft}}</h2>
-        </div>
-
-        <div>
-          <app-display-dice-new id="display" [changeDices]="routerService.dices"></app-display-dice-new>
-        </div>
-      </div>
-    </div>
+  <h1>Verfügbare Lobbys</h1>
+  <br>
+  <div class="games">
+    <button *ngFor="let game of lobbyRouterService.games" class="game" (click)="joinGame(game)">{{ game }}</button>
   </div>
 </div>

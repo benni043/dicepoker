@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import {RouterService} from "../../router.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-game',
@@ -6,5 +8,12 @@ import { Component } from '@angular/core';
   styleUrls: ['./game.component.scss']
 })
 export class GameComponent {
+
+  constructor(public routerService: RouterService, private router: Router) {
+  }
+
+  leaveGame() {
+    this.router.navigate(['/']).then();
+  }
 
 }

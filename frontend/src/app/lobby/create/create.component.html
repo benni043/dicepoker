@@ -10,12 +10,14 @@
           <span></span>
           <label>Servername:</label>
         </div>
+
         <div *ngIf="server.hasError('required') && server.touched">
           <span class="error" matTooltip="Sie müssen einen Servernamen angeben!"
                 matTooltipClass="custom-tooltip"
                 matTooltipPosition="below">&#9888;
           </span>
         </div>
+
         <div *ngIf="server.hasError('pattern')">
           <span class="error" matTooltip="Dieser Servername ist nicht erlaubt!"
                 matTooltipClass="custom-tooltip"
@@ -30,6 +32,7 @@
           <span></span>
           <label>Spieleranzahl:</label>
         </div>
+
         <div *ngIf="pc.hasError('required') && pc.touched">
           <span class="error" matTooltip="Sie müssen ein Passwort angeben!"
                 matTooltipClass="custom-tooltip"
@@ -44,6 +47,7 @@
           <span></span>
           <label>Spaltenanzahl:</label>
         </div>
+
         <div *ngIf="cc.hasError('required') && cc.touched">
           <span class="error" matTooltip="Sie müssen ein Passwort angeben!"
                 matTooltipClass="custom-tooltip"
@@ -54,8 +58,8 @@
     </div>
 
     <div id="buttons">
-      <button type="submit" [disabled]="create.invalid">Spiel erstellen</button>
-      <button id="leave" (click)="lobbyRouterService.toggleCreateGame()">Abbrechen</button>
+      <button id="join" type="submit" [disabled]="create.invalid">Spiel erstellen</button>
+      <button id="leave" (click)="back()">Abbrechen</button>
     </div>
   </form>
 </div>

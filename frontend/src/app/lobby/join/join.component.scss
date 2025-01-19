@@ -5,13 +5,6 @@
   font-family: "Poppins", sans-serif;
 }
 
-body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  overflow: hidden;
-}
-
 .center {
   position: absolute;
   top: 50%;
@@ -104,23 +97,6 @@ body {
   }
 }
 
-.signup_link {
-  margin: 30px 0;
-  text-align: center;
-  font-size: 16px;
-  color: #666666;
-
-  a {
-    color: #2691d9;
-    text-decoration: none;
-    cursor: pointer;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
 .error {
   position: absolute;
   left: 0;
@@ -134,58 +110,6 @@ body {
   flex-direction: row;
 }
 
-::ng-deep .mat-tooltip {
-  font-size: 14px;
-}
-
-.games {
-  text-align: center;
-  padding: 20px;
-
-  .create {
-    background-color: #337ab7;
-    color: #fff;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-bottom: 10px;
-
-    &:not(:disabled):hover {
-      background-color: #23527c;
-    }
-  }
-
-  h1 {
-    font-size: 24px;
-    margin-bottom: 10px;
-  }
-
-  .game {
-    background-color: #f5f5f5;
-    color: #333;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    margin-bottom: 10px;
-
-    &:not(:disabled):hover {
-      background-color: #e0e0e0;
-    }
-  }
-}
-
-.blur {
-  filter: blur(5px);
-}
-
-#capture {
-  transition: 0.5s;
-}
-
 #buttons {
   display: flex;
   justify-content: space-around;
@@ -196,20 +120,5 @@ body {
 
   #leave {
     background-color: red;
-  }
-}
-
-.outerGames {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-
-  min-width: 150px;
-  max-width: min-content;
-
-  margin: 0 auto;
-
-  button {
-    height: 50px;
   }
 }

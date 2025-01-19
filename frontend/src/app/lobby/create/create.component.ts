@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import {RouterService} from "../../router.service";
 import {LobbyRouterService} from "../../lobby-router.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-create',
@@ -12,11 +12,16 @@ export class CreateComponent {
   playerCount: number = 0;
   columnCount: number = 0;
 
-  constructor(public routerService: RouterService, public lobbyRouterService: LobbyRouterService) {
+  constructor(public lobbyRouterService: LobbyRouterService, private router: Router) {
   }
 
   createServer() {
-    this.lobbyRouterService.create(this.serverName, this.playerCount)
+    this.lobbyRouterService.create(this.serverName, this.playerCount);
+    this.back();
+  }
+
+  back() {
+    this.router.navigate(['/']).then();
   }
 
 }

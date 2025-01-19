@@ -1,20 +1,5 @@
-<div id="capture" [class.blur]="lobbyRouterService.createGame || lobbyRouterService.joinGame">
-  <div class="games">
-    <button class="create" *ngIf="!routerService.joined" (click)="lobbyRouterService.toggleCreateGame()" [disabled]="lobbyRouterService.createGame || lobbyRouterService.joinGame">Spiel erstellen</button>
-    <br>
-    <br>
-    <br>
-    <br>
+<div class="center">
 
-    <h1>Verfügbare Lobbys</h1>
-    <br>
-    <div class="outerGames">
-      <button *ngFor="let game of lobbyRouterService.games" class="game" (click)="start(game)" [disabled]="lobbyRouterService.joinGame || lobbyRouterService.createGame">{{game}}</button>
-    </div>
-  </div>
-</div>
-
-<div class="center" *ngIf="lobbyRouterService.joinGame">
   <form #joinForm="ngForm" (ngSubmit)="join()">
     <h1>Spiel beitreten!</h1>
 
@@ -43,7 +28,7 @@
 
     <div id="buttons">
       <button id="join" type="submit" [disabled]="joinForm.invalid">Spiel beitreten</button>
-      <button id="leave" (click)="lobbyRouterService.toggleJoinGame()">Abbrechen</button>
+      <button id="leave" (click)="cancel()">Abbrechen</button>
     </div>
   </form>
 </div>

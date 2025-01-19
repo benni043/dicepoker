@@ -15,11 +15,6 @@ export class LobbyRouterService {
   playerName: string = "";
   serverName: string = "";
 
-  createGame: boolean = false;
-  joinGame: boolean = false;
-
-  joined: boolean = false;
-
   games: string[] = [];
 
 
@@ -73,15 +68,6 @@ export class LobbyRouterService {
 
   create(serverName: string, playerCount: number) {
     this.socket.emit("createGame", {serverName: serverName, playerCount: playerCount});
-    this.toggleCreateGame();
-  }
-
-  toggleCreateGame() {
-    this.createGame = !this.createGame;
-  }
-
-  toggleJoinGame() {
-    this.joinGame = !this.joinGame;
   }
 
   error(msg: string) {

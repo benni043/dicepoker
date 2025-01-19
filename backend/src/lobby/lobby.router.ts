@@ -14,10 +14,11 @@ export class LobbyRouter {
         socketIO.of('/lobby').on('connection', (ws: Socket) => {
             console.log(`${ws.id} connected to lobby`);
 
+            ws.join("lobby");
+
             ws.emit("isInGame");
 
             ws.on("getAllGames", () => {
-                console.log(this.dicepokerService.getAllGames())
                 ws.emit("getGames", this.dicepokerService.getAllGames());
             })
 
@@ -29,7 +30,7 @@ export class LobbyRouter {
                 } else if (res == Create.alreadyExists) {
                     ws.emit("gameAlreadyExists");
                 } else {
-                    socketIO.of('/lobby').emit("getGames", this.dicepokerService.getAllGames());
+                    socketIO.to('lobby').emit("getGames", this.dicepokerService.getAllGames());
                 }
             })
 

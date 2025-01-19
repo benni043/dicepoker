@@ -59,6 +59,7 @@ export class LobbyRouterService {
         })
 
         this.socket.on("getGames", (games) => {
+            console.log(games)
             this.games = games;
         })
     }

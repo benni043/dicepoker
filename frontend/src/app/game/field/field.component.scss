@@ -27,6 +27,8 @@
   width: 100px;
 }
 
+
+
 .disabled {
   background-color: #666666;
 }
@@ -49,6 +51,7 @@
 
 .hover:hover {
   background-color: #adadad;
+  cursor: pointer;
 }
 
 .scroll {
